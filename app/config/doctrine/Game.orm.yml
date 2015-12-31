@@ -1,0 +1,19 @@
+Llvdl\Domino\Game:
+    type: entity
+    table: game
+    id:
+        id:
+            type: integer
+            generator: { strategy: AUTO }
+    fields:
+        name:
+            type: string
+            length: 100
+    oneToOne:
+        state:
+            targetEntity: Llvdl\Domino\State
+            cascade:
+                - persist 
+            joinColumn:
+                name: state_id
+                referencedColumnName: id

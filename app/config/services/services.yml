@@ -1,0 +1,5 @@
+services:
+    app.game_service:
+        class: Llvdl\Domino\GameService
+        arguments: 
+            - "@app.game_repository"

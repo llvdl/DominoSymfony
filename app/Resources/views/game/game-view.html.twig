@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div id="wrapper">
+        <div id="container">
+            <h1><span>{{ game.name }}</h1>
+
+            <p class="game-state"><label>State:<label> {{game.state}}<p>
+            
+            {{ form_start(form) }}
+            {{ form_widget(form) }}
+            {% if canDeal  %}
+                <input type="submit" name="deal-game" value="Deal" class="btn btn-default pull-right" />
+            {% endif %}
+            {{ form_end(form) }}
+
+        </div>
+    </div>
+{% endblock %}

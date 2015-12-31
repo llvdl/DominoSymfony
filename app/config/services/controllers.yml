@@ -1,0 +1,8 @@
+services:
+    app.game_controller:
+        class: AppBundle\Controller\GameController
+        arguments:
+            - "@templating"
+            - "@router"
+            - "@form.factory"
+            - "@app.game_service"

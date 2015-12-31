@@ -1,0 +1,12 @@
+app.game_overview:
+    path:     /game
+    defaults: { _controller: app.game_controller:indexAction }
+    methods:  [GET, POST]
+app.game_detail:
+    path:     /game/{gameId}
+    defaults: { _controller: app.game_controller:viewAction }
+    methods:  [GET, POST]
+
+app:
+    resource: "@AppBundle/Controller/"
+    type:     annotation
