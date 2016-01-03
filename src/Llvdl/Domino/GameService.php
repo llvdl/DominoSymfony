@@ -2,6 +2,8 @@
 
 namespace Llvdl\Domino;
 
+use Llvdl\Domino\Player;
+use Llvdl\Domino\Dto\PlayerDto;
 use Llvdl\Domino\Dto\GameDetailDto;
 use Llvdl\Domino\Dto\GameDetailDtoBuilder;
 use Llvdl\Domino\Exception\DominoException;
@@ -61,13 +63,21 @@ class GameService
         $this->gameRepository->persistGame($game);
     }
 
-    /** @return GameDetailDto */
+    /**
+     * @return GameDetailDto 
+     * @todo implement player stones
+     */
     private function mapGameToGameDetailDto(Game $game)
     {
-        return (new GameDetailDtoBuilder())
+        $builder = (new GameDetailDtoBuilder())
             ->id($game->getId())
             ->name($game->getName())
-            ->state($game->getState()->getName())
-            ->get();
+            ->state($game->getState()->getName());
+
+        foreach($game->getPlayers() as $player) {
+            $builder->addPlayer($player->getNumber(), []);
+        }
+        return $builder->get();
     }
+
 }

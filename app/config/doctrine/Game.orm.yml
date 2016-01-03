@@ -13,7 +13,14 @@ Llvdl\Domino\Game:
         state:
             targetEntity: Llvdl\Domino\State
             cascade:
-                - persist 
+                - persist
             joinColumn:
                 name: state_id
                 referencedColumnName: id
+    oneToMany:
+        players:
+            targetEntity: Llvdl\Domino\Player
+            mappedBy: game
+            cascade:
+                - persist
+

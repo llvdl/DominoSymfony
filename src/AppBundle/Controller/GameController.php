@@ -82,7 +82,7 @@ class GameController extends \AppBundle\Controller\BaseController
             return [
                 'form' => $form->createView(),
                 'game' => $gameDetail,
-                'canDeal' => $gameDetail->getState() === GameDetailDto::STATE_READY,
+                'canDeal' => $gameDetail->getState() === GameDetailDto::STATE_READY
             ];
         } catch (DominoException $e) {
             throw new BadRequestHttpException($e->getMessage());

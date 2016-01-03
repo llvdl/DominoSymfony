@@ -14,11 +14,11 @@ class GameRepositoryTest extends WebTestCase
 {
     /** @var GameRepository */
     private $gameRepository;
-    
+
     public function setUp()
     {
         parent::setUp();
-     
+
         $em = $this->getContainer()->get('doctrine')->getManager();
         if (!isset($metadatas)) {
             $metadatas = $em->getMetadataFactory()->getAllMetadata();
@@ -34,33 +34,34 @@ class GameRepositoryTest extends WebTestCase
         $this->loadFixtures($fixtures);
         $this->gameRepository = new GameRepository($this->getContainer()->get('doctrine'));
     }
-    
+
     public function testPersistNewGame()
     {
         $game = new Game('test game #1');
         $this->assertNull($game->getId());
-        
+
         $this->gameRepository->persistGame($game);
         $this->assertNotNull($game->getId());
         $this->assertEquals('test game #1', $game->getName());
+        $this->assertCount(4, $game->getPlayers());
     }
-    
+
     public function testPersistExistingGame()
     {
         $game = new Game('test game #1');
         $this->assertNull($game->getId());
-        
+
         $this->gameRepository->persistGame($game);
         $id = $game->getId();
-        
+
         $game->setName('test game #2');
         $this->gameRepository->persistGame($game);
-        
+
         $this->assertNotNull($game->getId());
         $this->assertSame($id, $game->getId(), 'game still has same id');
         $this->assertSame('test game #2', $game->getName());
     }
-    
+
     public function testPersistNewGameState()
     {
         // create and persist game with state "ready"
@@ -78,7 +79,7 @@ class GameRepositoryTest extends WebTestCase
         $game2->deal();
         $this->assertTrue($game2->getState()->isEqual(new State(State::STARTED)));
         $this->gameRepository->persistGame($game2);
-        
+
         // assert that the state is "started" when reloading the game
         $game3 = $this->gameRepository->findById($game1->getId());
         $this->assertTrue($game3->getState()->isEqual(new State(State::STARTED)));
@@ -87,18 +88,18 @@ class GameRepositoryTest extends WebTestCase
         $game4 = $this->gameRepository->findById($game0->getId());
         $this->assertTrue($game4->getState()->isEqual(new State(State::READY)));
     }
-    
+
     public function testFindByIdNotFoundReturnsNull()
     {
         $game = $this->gameRepository->findById(123);
         $this->assertNull($game);
     }
-    
+
     public function testFindById()
     {
         $game = $this->gameRepository->findById(123);
         $this->assertNull($game);
-        
+
         // persist games, store ids to look up games
         $names = [
             'test game #1-'.uniqid(), 
@@ -121,14 +122,15 @@ class GameRepositoryTest extends WebTestCase
             $this->assertNotNull($game);
             $this->assertSame($id, $game->getId());
             $this->assertSame($name, $game->getName());
+            $this->assertCount(4, $game->getPlayers());
         }
     }
-    
+
     public function testGetRecentGamesEmpty()
     {
         $this->assertSame([], $this->gameRepository->getRecentGames());
     }
-    
+
     public function testGetRecentGamesSome()
     {
         $names = [
@@ -141,9 +143,9 @@ class GameRepositoryTest extends WebTestCase
             $game = new Game($name);
             $this->gameRepository->persistGame($game);
         }
-        
+
         $games = $this->gameRepository->getRecentGames();
         $this->assertCount(3, $games);
     }
-    
+
 }

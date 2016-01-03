@@ -52,9 +52,9 @@ class GameDetailDtoBuilder
         return $this;
     }
 
-    public function addPlayer(array $stones, $name = '')
+    public function addPlayer($number, array $stones, $name = '')
     {
-        $playerNumber = count($this->_players) + 1;
+        $playerNumber = $number;
         $playerName = ($name === '' ? 'player '.$playerNumber : $name);
         $this->_players[] = new PlayerDto($playerNumber, $playerName, $this->mapToStoneDto($stones));
 

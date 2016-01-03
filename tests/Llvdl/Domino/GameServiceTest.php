@@ -27,9 +27,7 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
     public function testGetGameById()
     {
         $game = $this->createGame(14, 'game test');
-        $this->gameRepositoryMock->expects($this->any())->method('findById')
-            ->with($this->identicalTo(14))
-            ->willReturn($game);
+        $this->expectForFindById(14, $game);
 
         $gameDetailDto = $this->gameService->getGameById(14);
         $this->assertInstanceOf(\Llvdl\Domino\Dto\GameDetailDto::class, $gameDetailDto);
@@ -39,10 +37,7 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testGetGameByIdNotFound()
     {
-        $this->gameRepositoryMock->expects($this->any())->method('findById')
-            ->with($this->identicalTo(14))
-            ->willReturn(null);
-
+        $this->expectForFindById(14, NULL);
         $this->assertNull($this->gameService->getGameById(14));
     }
     
@@ -53,8 +48,7 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
             $this->createGame(4, 'game 4'),
             $this->createGame(1, 'game 1'),
         ];
-        $this->gameRepositoryMock->expects($this->any())->method('getRecentGames')
-            ->willReturn($games);
+        $this->expectsForGetRecentGames($games);
 
         $gamesDetailDtos = $this->gameService->getRecentGames();
         $this->assertCount(3, $gamesDetailDtos);
@@ -67,8 +61,7 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
     
     public function testGetRecentGamesNonAvailable()
     {
-        $this->gameRepositoryMock->expects($this->any())->method('getRecentGames')
-            ->willReturn([]);
+        $this->expectsForGetRecentGames([]);
 
         $gamesDetailDtos = $this->gameService->getRecentGames();
         $this->assertTrue(is_array($gamesDetailDtos), 'return value is an array');
@@ -87,6 +80,34 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
 
         $gameId = $this->gameService->createGame('my game');
         $this->assertSame(42, $gameId, 'the id of the newly created game is returned');
+    }
+
+    public function testCreatedGameHasFourPlayersWithNoStones()
+    {
+        $persistedGame = null;
+        $this->gameRepositoryMock->expects($this->once())->method('persistGame')
+            ->with($this->isInstanceOf(\Llvdl\Domino\Game::class))
+            ->will($this->returnCallback(function(Game $game) use(&$persistedGame) {
+                // persisting sets the id
+                $this->setPrivateProperty($game, 'id', 42);
+                $persistedGame = $game;
+                return $game;
+            }));
+
+        $this->gameRepositoryMock->expects($this->any())->method('findById')
+            ->with($this->identicalTo(42))
+            ->will($this->returnCallback(function() use(&$persistedGame) { return $persistedGame; }));
+
+        $gameId = $this->gameService->createGame('my game');
+        $gameDetailDto = $this->gameService->getGameById($gameId);
+        $this->assertNotNull($gameDetailDto);
+        $this->assertInstanceOf(\Llvdl\Domino\Dto\GameDetailDto::class, $gameDetailDto);
+
+        $this->assertCount(4, $gameDetailDto->getPlayers());
+        foreach($gameDetailDto->getPlayers() as $player) {
+            $this->assertInstanceOf(\Llvdl\Domino\Dto\PlayerDto::class, $player);
+            $this->assertCount(0, $player->getStones());
+        }
     }
 
     public function testDealGame()
@@ -128,5 +149,19 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
         $property = new \reflectionproperty(get_class($obj), $name);
         $property->setAccessible(true);
         $property->setValue($obj, $value);
+    }
+
+    private function expectForFindById($gameId, $resultGame)
+    {
+        $this->gameRepositoryMock->expects($this->any())->method('findById')
+            ->with($this->identicalTo($gameId))
+            ->willReturn($resultGame);
+    }
+
+    private function expectsForGetRecentGames($resultGames)
+    {
+        $this->gameRepositoryMock->expects($this->any())->method('getRecentGames')
+            ->willReturn($resultGames);
+
     }
 }

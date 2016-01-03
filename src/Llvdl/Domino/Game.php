@@ -2,6 +2,9 @@
 
 namespace Llvdl\Domino;
 
+use Llvdl\Domino\Player;
+use Llvdl\Domino\State;
+
 class Game
 {
     /** @var int */
@@ -10,6 +13,8 @@ class Game
     private $name;
     /** @var State */
     private $state;
+    /** @var Player[]; */
+    private $players = [];
 
     /** @param string $name */
     public function __construct($name)
@@ -17,6 +22,7 @@ class Game
         $this->id = null;
         $this->name = $name;
         $this->state = State::getInitialState();
+        $this->initializePlayers();
     }
 
     /** @return int */
@@ -42,9 +48,61 @@ class Game
     {
         return $this->state;
     }
+    
+    /** @return Player[] players */
+    public function getPlayers()
+    {
+        return $this->players;
+    }
 
     public function deal()
     {
         $this->state->start();
+    }
+
+    private function initializePlayers()
+    {
+        $this->players = [];
+        foreach([1,2,3,4] as $number) {
+            $this->players[$number] = new Player($this, $number);
+        }
+    }
+
+    /**
+     * Set state
+     *
+     * @param \Llvdl\Domino\State $state
+     *
+     * @return Game
+     */
+    public function setState(\Llvdl\Domino\State $state = null)
+    {
+        $this->state = $state;
+
+        return $this;
+    }
+
+    /**
+     * Add player
+     *
+     * @param \Llvdl\Domino\Player $player
+     *
+     * @return Game
+     */
+    public function addPlayer(\Llvdl\Domino\Player $player)
+    {
+        $this->players[] = $player;
+
+        return $this;
+    }
+
+    /**
+     * Remove player
+     *
+     * @param \Llvdl\Domino\Player $player
+     */
+    public function removePlayer(\Llvdl\Domino\Player $player)
+    {
+        $this->players->removeElement($player);
     }
 }

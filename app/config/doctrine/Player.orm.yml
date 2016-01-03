@@ -1,0 +1,20 @@
+Llvdl\Domino\Player:
+    type: entity
+    table: player
+    id:
+        id:
+            type: integer
+            generator: { strategy: AUTO }
+    fields:
+        number:
+            type: integer
+        name:
+            type: string
+            length: 255
+    manyToOne:
+        game:
+            targetEntity: Llvdl\Domino\Game
+            inversedBy: players
+            joinColumn:
+                name: game_id
+                referencedColumnName: id
