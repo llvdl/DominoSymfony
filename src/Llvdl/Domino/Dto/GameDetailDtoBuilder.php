@@ -86,8 +86,5 @@ class GameDetailDtoBuilder
             $stoneDtos[] = is_array($stone) ? new StoneDto($stone[0], $stone[1]) : new StoneDto($stone->getTopValue(), $stone->getBottomValue());
         }
         return $stoneDtos;
-//        return array_map(function ($stone) {
-//            return is_array($stone) ? new StoneDto($stone[0], $stone[1]) : new StoneDto($stone->getTopValue(), $stone->getBottomValue());
-//        }, $stones);
     }
 }
