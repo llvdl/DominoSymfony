@@ -52,7 +52,7 @@ class GameDetailDtoBuilder
         return $this;
     }
 
-    public function addPlayer($number, array $stones, $name = '')
+    public function addPlayer($number, /*array*/ $stones, $name = '')
     {
         $playerNumber = $number;
         $playerName = ($name === '' ? 'player '.$playerNumber : $name);
@@ -79,10 +79,15 @@ class GameDetailDtoBuilder
         return new GameDetailDto($this->_id, $this->_name, $this->_state, $this->_players, $this->_tableStones, $this->_currentTurn);
     }
 
-    private function mapToStoneDto(array $stones)
+    private function mapToStoneDto(/*array*/ $stones)
     {
-        return array_map(function ($stone) {
-            return is_array($stone) ? new StoneDto($stone[0], $stone[1]) : $stone;
-        }, $stones);
+        $stoneDtos = [];
+        foreach($stones as $stone) {
+            $stoneDtos[] = is_array($stone) ? new StoneDto($stone[0], $stone[1]) : new StoneDto($stone->getTopValue(), $stone->getBottomValue());
+        }
+        return $stoneDtos;
+//        return array_map(function ($stone) {
+//            return is_array($stone) ? new StoneDto($stone[0], $stone[1]) : new StoneDto($stone->getTopValue(), $stone->getBottomValue());
+//        }, $stones);
     }
 }

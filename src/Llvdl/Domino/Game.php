@@ -4,6 +4,7 @@ namespace Llvdl\Domino;
 
 use Llvdl\Domino\Player;
 use Llvdl\Domino\State;
+use Llvdl\Domino\Stone;
 
 class Game
 {
@@ -48,15 +49,33 @@ class Game
     {
         return $this->state;
     }
-    
-    /** @return Player[] players */
+
+    /**
+     * @return Player[] array of players, the key is the player number
+     */
     public function getPlayers()
     {
-        return $this->players;
+        $players = [];
+        foreach($this->players as $player) {
+            $players[$player->getNumber()] = $player;
+        }
+        return $players;
     }
 
     public function deal()
     {
+        $stones = [];
+        for($top = 0; $top < 7; ++$top) {
+            for($bottom = $top; $bottom < 7; ++$bottom) {
+                $stones[] = new Stone($top, $bottom);
+            }
+        }
+        shuffle($stones);
+
+        foreach($this->players as $player) {
+            $player->addStones(array_splice($stones, 0, 7));
+        }
+
         $this->state->start();
     }
 
@@ -64,7 +83,7 @@ class Game
     {
         $this->players = [];
         foreach([1,2,3,4] as $number) {
-            $this->players[$number] = new Player($this, $number);
+            $this->players[] = new Player($this, $number);
         }
     }
 

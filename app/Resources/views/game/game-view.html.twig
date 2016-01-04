@@ -18,7 +18,7 @@
             {% if game.players %}
             <ul class="players">
                 {% for player in game.players %}
-                <li class="player">Player {{ player.number }}</li>
+                <li class="player">Player {{ player.number }} (<span class="stone-count">{{ player.stones|length }}<span> stones)</li>
                 {% endfor %}
             </ul>
             {% endif %}

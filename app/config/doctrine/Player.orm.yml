@@ -18,3 +18,9 @@ Llvdl\Domino\Player:
             joinColumn:
                 name: game_id
                 referencedColumnName: id
+    oneToMany:
+        stones:
+            targetEntity: Llvdl\Domino\Stone
+            mappedBy: player
+            cascade:
+                - persist

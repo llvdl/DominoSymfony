@@ -75,7 +75,7 @@ class GameService
             ->state($game->getState()->getName());
 
         foreach($game->getPlayers() as $player) {
-            $builder->addPlayer($player->getNumber(), []);
+            $builder->addPlayer($player->getNumber(), $player->getStones());
         }
         return $builder->get();
     }

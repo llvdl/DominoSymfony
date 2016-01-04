@@ -127,6 +127,41 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($game->getState()->isEqual(new State(State::STARTED)));
     }
 
+    public function testAfterDealPlayersHaveSevenStonesEach()
+    {
+        $game = $this->createGame(42, 'some game');
+
+        $this->assertCount(4, $game->getPlayers());
+        $this->assertCount(0, $game->getPlayers()[1]->getStones());
+        $this->assertCount(0, $game->getPlayers()[2]->getStones());
+        $this->assertCount(0, $game->getPlayers()[3]->getStones());
+        $this->assertCount(0, $game->getPlayers()[4]->getStones());
+
+        $this->gameRepositoryMock->expects($this->any())->method('findById')
+            ->with($this->identicalTo(42))
+            ->willReturn($game);
+
+        $this->gameRepositoryMock->expects($this->once())->method('persistGame')
+            ->with($this->identicalTo($game))
+            ->willReturn($game);
+
+        $this->gameService->deal(42);
+        $this->assertTrue($game->getState()->isEqual(new State(State::STARTED)));
+
+        $this->assertCount(7, $game->getPlayers()[1]->getStones());
+        $this->assertCount(7, $game->getPlayers()[2]->getStones());
+        $this->assertCount(7, $game->getPlayers()[3]->getStones());
+        $this->assertCount(7, $game->getPlayers()[4]->getStones());
+
+        $gameDetailDto = $this->gameService->getGameById(42);
+
+        $this->assertCount(7, $gameDetailDto->getPlayers()[0]->getStones());
+        $this->assertCount(7, $gameDetailDto->getPlayers()[1]->getStones());
+        $this->assertCount(7, $gameDetailDto->getPlayers()[2]->getStones());
+        $this->assertCount(7, $gameDetailDto->getPlayers()[3]->getStones());
+
+    }
+
     /** @expectedException \Llvdl\Domino\Exception\DominoException */
     public function testDealGameWithNonExistingGameThrowsException()
     {

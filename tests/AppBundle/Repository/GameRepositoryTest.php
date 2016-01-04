@@ -9,6 +9,8 @@ use AppBundle\Repository\GameRepository;
 
 use Llvdl\Domino\Game;
 use Llvdl\Domino\State;
+use Llvdl\Domino\Player;
+use Llvdl\Domino\Stone;
 
 class GameRepositoryTest extends WebTestCase
 {
@@ -33,6 +35,12 @@ class GameRepositoryTest extends WebTestCase
         $fixtures = [];
         $this->loadFixtures($fixtures);
         $this->gameRepository = new GameRepository($this->getContainer()->get('doctrine'));
+    }
+
+    private function clearEntityManager()
+    {
+        $em = $this->getContainer()->get('doctrine')->getManager();
+        $em->clear();
     }
 
     public function testPersistNewGame()
@@ -74,6 +82,8 @@ class GameRepositoryTest extends WebTestCase
         $this->assertTrue($game1->getState()->isEqual(new State(State::READY)));
         $this->gameRepository->persistGame($game1);
 
+        $this->clearEntityManager();
+
         // change state to "started" and persist
         $game2 = $this->gameRepository->findById($game1->getId());
         $game2->deal();
@@ -93,6 +103,22 @@ class GameRepositoryTest extends WebTestCase
     {
         $game = $this->gameRepository->findById(123);
         $this->assertNull($game);
+    }
+
+    public function testPlayerStonesArePersisted()
+    {
+        $game0 = new Game('test game #1');
+        $this->setGameStones($game0, [1 => [[0,0], [1,0]], 2 => [[1,1], [2,1]], 3 => [[2,2], [2,3]], 4 => [[3,3]]]);
+        $this->gameRepository->persistGame($game0);
+
+        $this->clearEntityManager();
+
+        $game = $this->gameRepository->findById($game0->getId());
+
+        $this->assertPlayerHasStones($game->getPlayers()[1], [[0,0], [1,0]]);
+        $this->assertPlayerHasStones($game->getPlayers()[2], [[1,1], [2,1]]);
+        $this->assertPlayerHasStones($game->getPlayers()[3], [[2,2], [2,3]]);
+        $this->assertPlayerHasStones($game->getPlayers()[4], [[3,3]]);
     }
 
     public function testFindById()
@@ -148,4 +174,38 @@ class GameRepositoryTest extends WebTestCase
         $this->assertCount(3, $games);
     }
 
+    /**
+     * helper function to assign stones to players
+     *
+     * @param Game $game
+     * @param array $playerStones array of stone values (first value is top value, second value
+     *      is bottom values). The array keys are player numbers
+     */
+    private function setGameStones(Game $game, array $playerStones) {
+        $players = $game->getPlayers();
+        foreach($playerStones as $playerNumber=>$stoneValues)
+        {
+            $stones = array_map(function(array $values) { return new Stone($values[0], $values[1]); }, $stoneValues);
+            $players[$playerNumber]->addStones($stones);
+        }
+    }
+
+    private function assertPlayerHasStones(Player $player, array $stoneValues)
+    {
+
+        $stones = $player->getStones();
+
+        $this->assertEquals(count($stoneValues), count($stones), 'player should have ' . count($stoneValues) . ' stone(s)');
+
+        reset($stoneValues);
+        foreach($stones as $stone) {
+            $values = current($stoneValues);
+            $topValue = $values[0];
+            $bottomValue = $values[1];
+
+            $this->assertEquals($topValue, $stone->getTopValue());
+            $this->assertEquals($bottomValue, $stone->getBottomValue());
+            next($stoneValues);
+        }
+    }
 }

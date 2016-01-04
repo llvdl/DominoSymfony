@@ -2,8 +2,7 @@
 
 namespace Llvdl\Domino;
 
-//use Llvdl\Domino\Stone;
-
+use Llvdl\Domino\Stone;
 use Llvdl\Domino\Game;
 
 class Player
@@ -39,10 +38,24 @@ class Player
         return $this->name;
     }
 
-    /** @todo implement stones */
+    /** @return Stone[] */
     public function getStones()
     {
-        return [];
+        return $this->stones;
+    }
+
+    /** 
+     * @param Stone[] $stones 
+     *
+     * @todo remove horrible clutch to assign player to stone to have the ORM persist stones
+     */
+    public function addStones(array $stones)
+    {
+        foreach($stones as $stone)
+        {
+            $stone->setPlayer($this);
+        }
+        $this->stones = array_merge(is_array($this->stones) ? $this->stones : [], $stones);
     }
 
     /**

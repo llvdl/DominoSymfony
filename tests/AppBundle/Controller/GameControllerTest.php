@@ -9,6 +9,11 @@ use Llvdl\Domino\Exception\DominoException;
 
 class GameControllerTest extends MockeryWebTestCase
 {
+    const STATUS_CODE_OK = 200;
+    const STATUS_CODE_TEMPORARY_REDIRECT = 302;
+    const STATUS_CODE_CLIENT_ERROR = 400;
+    const STATUS_CODE_NOT_FOUND = 404;
+
     public function testIndexNoGamesAreAvailableIsShown()
     {
         $this->expectForRecentGames([]);
@@ -47,7 +52,7 @@ class GameControllerTest extends MockeryWebTestCase
 
         $crawler = $this->getClient()->request('GET', '/game');
 
-        $this->assertEquals(200, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertStatusCode(self::STATUS_CODE_OK);
         $this->assertContains('Games', $crawler->filter('#container h1')->text());
         $this->assertEquals(count($games), $crawler->filter('#container .game-list ul li')->count(), 'one game available');
 
@@ -63,7 +68,7 @@ class GameControllerTest extends MockeryWebTestCase
         $this->expectForGameById(1, null);
 
         $crawler = $this->getClient()->request('GET', '/game/1');
-        $this->assertEquals(404, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertStatusCode(self::STATUS_CODE_NOT_FOUND);
     }
 
     public function testGameDetailShowsDetails()
@@ -80,7 +85,7 @@ class GameControllerTest extends MockeryWebTestCase
         $this->expectForGameById(1, $game);
 
         $crawler = $this->getClient()->request('GET', '/game/1');
-        $this->assertEquals(200, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertStatusCode(self::STATUS_CODE_OK);
 
         $this->assertContains('My Game', $crawler->filter('#container h1')->text());
         $this->assertContains('ready', $crawler->filter('#container .game-state')->text());
@@ -103,8 +108,7 @@ class GameControllerTest extends MockeryWebTestCase
         $form['create_game_form[name]'] = $gameName;
         $crawler = $this->getClient()->submit($form);
 
-        // check for redirect
-        $this->assertEquals(302, $this->getClient()->getResponse()->getStatusCode(), 'A redirect is expected so refreshing will not resubmit the form');
+        $this->assertStatusCode(self::STATUS_CODE_TEMPORARY_REDIRECT);
 
         // follow redirect to game detail page
         $this->expectForGameById(42,
@@ -112,7 +116,7 @@ class GameControllerTest extends MockeryWebTestCase
         );
 
         $crawler = $this->getClient()->followRedirect();
-        $this->assertEquals(200, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertStatusCode(self::STATUS_CODE_OK);
         $this->assertContains($gameName, $crawler->filter('#container h1')->text());
     }
 
@@ -135,7 +139,7 @@ class GameControllerTest extends MockeryWebTestCase
         $crawler = $this->getClient()->submit($form);
 
         // check for redirect
-        $this->assertEquals(302, $this->getClient()->getResponse()->getStatusCode(), 'A redirect is expected so refreshing will not resubmit the form');
+        $this->assertStatusCode(self::STATUS_CODE_TEMPORARY_REDIRECT);
 
         $this->expectForGameById(1,
             (new GameDetailDtoBuilder())
@@ -145,7 +149,7 @@ class GameControllerTest extends MockeryWebTestCase
         );
 
         $crawler = $this->getClient()->followRedirect();
-        $this->assertEquals(200, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertStatusCode(self::STATUS_CODE_OK);
         $button = $crawler->selectButton('deal-game');
         $this->assertEquals(0, count($button), 'deal button not shown');
     }
@@ -176,7 +180,7 @@ class GameControllerTest extends MockeryWebTestCase
 
         $form = $button->form();
         $crawler = $this->getClient()->submit($form);
-        $this->assertEquals(400, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertStatusCode(self::STATUS_CODE_CLIENT_ERROR);
     }
 
     public function testGameDealButtonMustBeSubmitted()
@@ -192,7 +196,38 @@ class GameControllerTest extends MockeryWebTestCase
         $this->assertTrue(isset($form['deal-game']));
         unset($form['deal-game']);
         $crawler = $this->getClient()->submit($form);
-        $this->assertEquals(400, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertStatusCode(self::STATUS_CODE_CLIENT_ERROR);
+    }
+
+    public function testAfterGameDealAllPlayersHaveSevenStones()
+    {
+        $this->expectForGameById(1, (new GameDetailDtoBuilder())->id(1)->stateReady()->get());
+
+        $crawler = $this->getClient()->request('GET', '/game/1');
+        $button = $crawler->selectButton('deal-game');
+        $this->assertEquals(1, count($button));
+
+        $this->expectForDeal(1);
+
+        $shuffler = new StoneShuffler();
+        $this->expectForGameById(1, (
+            new GameDetailDtoBuilder())->id(1)->stateStarted()
+            ->addPlayer(1, $shuffler->getNext(7))
+            ->addPlayer(1, $shuffler->getNext(7))
+            ->addPlayer(1, $shuffler->getNext(7))
+            ->addPlayer(1, $shuffler->getNext(7))
+            ->get());
+
+        $form = $button->form();
+        $crawler = $this->getClient()->submit($form);
+        $crawler = $this->getClient()->followRedirect();
+
+        $this->assertStatusCode(self::STATUS_CODE_OK);
+
+        $this->assertContains('7', $crawler->filter('#container .players .player .stone-count')->eq(0)->text());
+        $this->assertContains('7', $crawler->filter('#container .players .player .stone-count')->eq(0)->text());
+        $this->assertContains('7', $crawler->filter('#container .players .player .stone-count')->eq(0)->text());
+        $this->assertContains('7', $crawler->filter('#container .players .player .stone-count')->eq(0)->text());
     }
 
 
@@ -217,6 +252,12 @@ class GameControllerTest extends MockeryWebTestCase
             ->shouldReceive('getRecentGames')
             ->once()
             ->andReturn($result);
+    }
+
+    /** @param integer $expectedStatusCode */
+    private function assertStatusCode($expectedStatusCode)
+    {
+        $this->assertEquals($expectedStatusCode, $this->getClient()->getResponse()->getStatusCode());
     }
 
     /**
