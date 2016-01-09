@@ -40,7 +40,7 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
         $this->expectForFindById(14, NULL);
         $this->assertNull($this->gameService->getGameById(14));
     }
-    
+
     public function testGetRecentGames()
     {
         $games = [
@@ -58,7 +58,7 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
             $this->assertSame($games[$i]->getName(), $gamesDetailDtos[$i]->getName());
         }
     }
-    
+
     public function testGetRecentGamesNonAvailable()
     {
         $this->expectsForGetRecentGames([]);
@@ -148,18 +148,12 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
         $this->gameService->deal(42);
         $this->assertTrue($game->getState()->isEqual(new State(State::STARTED)));
 
-        $this->assertCount(7, $game->getPlayers()[1]->getStones());
-        $this->assertCount(7, $game->getPlayers()[2]->getStones());
-        $this->assertCount(7, $game->getPlayers()[3]->getStones());
-        $this->assertCount(7, $game->getPlayers()[4]->getStones());
-
         $gameDetailDto = $this->gameService->getGameById(42);
 
         $this->assertCount(7, $gameDetailDto->getPlayers()[0]->getStones());
         $this->assertCount(7, $gameDetailDto->getPlayers()[1]->getStones());
         $this->assertCount(7, $gameDetailDto->getPlayers()[2]->getStones());
         $this->assertCount(7, $gameDetailDto->getPlayers()[3]->getStones());
-
     }
 
     /** @expectedException \Llvdl\Domino\Exception\DominoException */

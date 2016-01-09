@@ -230,7 +230,6 @@ class GameControllerTest extends MockeryWebTestCase
         $this->assertContains('7', $crawler->filter('#container .players .player .stone-count')->eq(0)->text());
     }
 
-
     private function createGame($id, $name)
     {
         $game = new Game($name);

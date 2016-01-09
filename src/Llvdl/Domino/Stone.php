@@ -48,4 +48,13 @@ class Stone
     {
         $this->player = $player;
     }
+
+    /** 
+     * @param Stone $other
+     * @return boolean TRUE if stone is equal to other stone, otherwise false
+     */
+    public function isEqual(Stone $other)
+    {
+        return $this->topValue === $other->topValue && $this->bottomValue === $other->bottomValue;
+    }
 }
