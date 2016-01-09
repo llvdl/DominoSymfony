@@ -82,9 +82,10 @@ class GameDetailDtoBuilder
     private function mapToStoneDto(/*array*/ $stones)
     {
         $stoneDtos = [];
-        foreach($stones as $stone) {
+        foreach ($stones as $stone) {
             $stoneDtos[] = is_array($stone) ? new StoneDto($stone[0], $stone[1]) : new StoneDto($stone->getTopValue(), $stone->getBottomValue());
         }
+
         return $stoneDtos;
     }
 }

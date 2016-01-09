@@ -2,17 +2,14 @@
 
 namespace Llvdl\Domino;
 
-use Llvdl\Domino\Stone;
-use Llvdl\Domino\Game;
-
 class Player
 {
-    /** @var integer only used by ORM layer */
+    /** @var int only used by ORM layer */
     private $id;
 
     /** @var Game $game */
     private $game;
-    /** @var integer number */
+    /** @var int number */
     private $number;
     /** @var string $name */
     private $name;
@@ -26,7 +23,7 @@ class Player
         $this->name = $name;
     }
 
-    /** @return integer */
+    /** @return int */
     public function getNumber()
     {
         return $this->number;
@@ -45,23 +42,22 @@ class Player
     }
 
     /** 
-     * @param Stone[] $stones 
+     * @param Stone[] $stones
      *
      * @todo remove horrible clutch to assign player to stone to have the ORM persist stones
      */
     public function addStones(array $stones)
     {
-        foreach($stones as $stone)
-        {
+        foreach ($stones as $stone) {
             $stone->setPlayer($this);
         }
         $this->stones = array_merge(is_array($this->stones) ? $this->stones : [], $stones);
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -69,9 +65,9 @@ class Player
     }
 
     /**
-     * Set number
+     * Set number.
      *
-     * @param integer $number
+     * @param int $number
      *
      * @return Player
      */
@@ -83,7 +79,7 @@ class Player
     }
 
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
      *

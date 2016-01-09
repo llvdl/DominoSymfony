@@ -2,10 +2,6 @@
 
 namespace Llvdl\Domino;
 
-use Llvdl\Domino\Player;
-use Llvdl\Domino\State;
-use Llvdl\Domino\Stone;
-
 class Game
 {
     /** @var int */
@@ -56,23 +52,24 @@ class Game
     public function getPlayers()
     {
         $players = [];
-        foreach($this->players as $player) {
+        foreach ($this->players as $player) {
             $players[$player->getNumber()] = $player;
         }
+
         return $players;
     }
 
     public function deal()
     {
         $stones = [];
-        for($top = 0; $top < 7; ++$top) {
-            for($bottom = $top; $bottom < 7; ++$bottom) {
+        for ($top = 0; $top < 7; ++$top) {
+            for ($bottom = $top; $bottom < 7; ++$bottom) {
                 $stones[] = new Stone($top, $bottom);
             }
         }
         shuffle($stones);
 
-        foreach($this->players as $player) {
+        foreach ($this->players as $player) {
             $player->addStones(array_splice($stones, 0, 7));
         }
 
@@ -82,13 +79,13 @@ class Game
     private function initializePlayers()
     {
         $this->players = [];
-        foreach([1,2,3,4] as $number) {
+        foreach ([1, 2, 3, 4] as $number) {
             $this->players[] = new Player($this, $number);
         }
     }
 
     /**
-     * Set state
+     * Set state.
      *
      * @param \Llvdl\Domino\State $state
      *
@@ -102,7 +99,7 @@ class Game
     }
 
     /**
-     * Add player
+     * Add player.
      *
      * @param \Llvdl\Domino\Player $player
      *
@@ -116,7 +113,7 @@ class Game
     }
 
     /**
-     * Remove player
+     * Remove player.
      *
      * @param \Llvdl\Domino\Player $player
      */

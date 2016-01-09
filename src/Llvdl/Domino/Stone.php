@@ -2,29 +2,29 @@
 
 namespace Llvdl\Domino;
 
-use Llvdl\Domino\Player;
-
 class Stone
 {
     /**
-     * only for use by the ORM
-     * @var integer
+     * only for use by the ORM.
+     *
+     * @var int
      */
     private $id;
     /**
-     * only for use by the ORM
+     * only for use by the ORM.
+     *
      * @var Player
      */
     private $player;
 
-    /** @var integer */
+    /** @var int */
     private $topValue;
-    /** @var integer */
+    /** @var int */
     private $bottomValue;
 
     /**
-     * @param integer $topValue
-     * @param integer $bottomValue
+     * @param int $topValue
+     * @param int $bottomValue
      */
     public function __construct($topValue, $bottomValue)
     {
@@ -32,13 +32,13 @@ class Stone
         $this->bottomValue = $bottomValue;
     }
 
-    /** @return integer */
+    /** @return int */
     public function getTopValue()
     {
         return $this->topValue;
     }
 
-    /** @return integer */
+    /** @return int */
     public function getBottomValue()
     {
         return $this->bottomValue;
@@ -51,7 +51,8 @@ class Stone
 
     /** 
      * @param Stone $other
-     * @return boolean TRUE if stone is equal to other stone, otherwise false
+     *
+     * @return bool TRUE if stone is equal to other stone, otherwise false
      */
     public function isEqual(Stone $other)
     {

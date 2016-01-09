@@ -66,9 +66,9 @@ class State
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -76,7 +76,7 @@ class State
     }
 
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
      *
