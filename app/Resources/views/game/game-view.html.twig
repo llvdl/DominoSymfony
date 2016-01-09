@@ -3,7 +3,7 @@
 {% block body %}
     <div id="wrapper">
         <div id="container">
-            <h1><span>{{ game.name }}</h1>
+            <h1><a href="{{ path('app.game_overview') }}">Games</a> | <span>{{ game.name }}</h1>
 
             <p class="game-state"><label>State:<label> {{game.state}}<p>
 

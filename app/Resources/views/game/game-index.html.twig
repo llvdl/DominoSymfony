@@ -8,7 +8,7 @@
                 {% if games %}
                   <ul>
                     {% for game in games %}
-                      <li><a href="/game/{{ game.id }}">{{ game.name|e }}</a></li>
+                      <li><a href="{{ path('app.game_detail', {'gameId': game.id}) }}">{{ game.name|e }}</a></li>
                     {% endfor %}
                   </ul>
                 {% endif %}
