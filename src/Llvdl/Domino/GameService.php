@@ -2,7 +2,6 @@
 
 namespace Llvdl\Domino;
 
-
 use Llvdl\Domino\Dto\GameDetailDto;
 use Llvdl\Domino\Dto\GameDetailDtoBuilder;
 use Llvdl\Domino\Exception\DominoException;
@@ -76,6 +75,10 @@ class GameService
 
         foreach ($game->getPlayers() as $player) {
             $builder->addPlayer($player->getNumber(), $player->getStones());
+        }
+
+        if ($game->getCurrentTurn() !== null) {
+            $builder->turn($game->getCurrentTurn()->getNumber(), $game->getCurrentTurn()->getPlayerNumber());
         }
 
         return $builder->get();

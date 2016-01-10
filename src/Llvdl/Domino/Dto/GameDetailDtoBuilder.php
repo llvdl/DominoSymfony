@@ -68,7 +68,7 @@ class GameDetailDtoBuilder
 
     public function turn($turnNumber, $currentPlayerNumber)
     {
-        $this->_currentTurn = new CurrentTurnDto($turnNumber, $currentPlayerNumber);
+        $this->_currentTurn = new TurnDto($turnNumber, $currentPlayerNumber);
 
         return $this;
     }

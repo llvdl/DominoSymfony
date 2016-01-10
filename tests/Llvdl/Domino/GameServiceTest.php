@@ -6,10 +6,21 @@ use Llvdl\Domino\Game;
 use Llvdl\Domino\GameService;
 use Llvdl\Domino\GameRepository;
 use Llvdl\Domino\Dto\GameDetailDto;
+use Llvdl\Domino\Dto\PlayerDto;
+use Llvdl\Domino\Dto\StoneDto;
 use Llvdl\Domino\State;
 
+/**
+ * GameService API:
+ * - getGameById($gameId: int): GameDetailDto|NULL
+ * - getRecentGames(): GameDetailDto[]
+ * - deal($gameId: int): void
+ * - move($move: MoveDto): void
+ */
 class GameServiceTest extends \PHPUnit_Framework_TestCase
 {
+    const ONCE = 1;
+
     /** @var gameService */
     private $gameService;
     /** @var GameRepository */
@@ -48,7 +59,7 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
             $this->createGame(4, 'game 4'),
             $this->createGame(1, 'game 1'),
         ];
-        $this->expectsForGetRecentGames($games);
+        $this->expectForGetRecentGames($games);
 
         $gamesDetailDtos = $this->gameService->getRecentGames();
         $this->assertCount(3, $gamesDetailDtos);
@@ -61,7 +72,7 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testGetRecentGamesNonAvailable()
     {
-        $this->expectsForGetRecentGames([]);
+        $this->expectForGetRecentGames([]);
 
         $gamesDetailDtos = $this->gameService->getRecentGames();
         $this->assertTrue(is_array($gamesDetailDtos), 'return value is an array');
@@ -130,39 +141,49 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
     public function testAfterDealPlayersHaveSevenStonesEach()
     {
         $game = $this->createGame(42, 'some game');
+        $this->expectForFindById(42, $game);
+        $this->expectPersistForGame($game, self::ONCE);
 
-        $this->assertCount(4, $game->getPlayers());
-        $this->assertCount(0, $game->getPlayers()[1]->getStones());
-        $this->assertCount(0, $game->getPlayers()[2]->getStones());
-        $this->assertCount(0, $game->getPlayers()[3]->getStones());
-        $this->assertCount(0, $game->getPlayers()[4]->getStones());
+        $gameDetailDto = $this->gameService->getGameById(42);
 
-        $this->gameRepositoryMock->expects($this->any())->method('findById')
-            ->with($this->identicalTo(42))
-            ->willReturn($game);
-
-        $this->gameRepositoryMock->expects($this->once())->method('persistGame')
-            ->with($this->identicalTo($game))
-            ->willReturn($game);
+        $this->assertCount(4, $gameDetailDto->getPlayers());
+        foreach($gameDetailDto->getPlayers() as $player) {
+            $this->assertStoneCount(0, $player);
+        }
 
         $this->gameService->deal(42);
         $this->assertTrue($game->getState()->isEqual(new State(State::STARTED)));
 
         $gameDetailDto = $this->gameService->getGameById(42);
+        $this->assertCount(4, $gameDetailDto->getPlayers());
+        foreach($gameDetailDto->getPlayers() as $player) {
+            $this->assertStoneCount(7, $player);
+        }
+    }
 
-        $this->assertCount(7, $gameDetailDto->getPlayers()[0]->getStones());
-        $this->assertCount(7, $gameDetailDto->getPlayers()[1]->getStones());
-        $this->assertCount(7, $gameDetailDto->getPlayers()[2]->getStones());
-        $this->assertCount(7, $gameDetailDto->getPlayers()[3]->getStones());
+    public function testAfterDealPlayerWithDoubleSixHasTurn()
+    {
+        $game = $this->createGame(42, 'test game');
+        $this->expectForFindById(42, $game);
+        $this->expectPersistForGame($game);
+
+        $gameDetailDto = $this->gameService->getGameById(42);
+        $this->assertNull($gameDetailDto->getCurrentTurn());
+
+        $this->gameService->deal(42);
+        $gameDetailDto = $this->gameService->getGameById(42);
+
+        // check if player with current turn has double six
+        $turnDto = $gameDetailDto->getCurrentTurn();
+        $this->assertNotNull($turnDto);
+        $currentPlayerNumber = $turnDto->getCurrentPlayerNumber();
+        $this->assertPlayerHasStone($gameDetailDto, $currentPlayerNumber, new StoneDto(6, 6));
     }
 
     /** @expectedException \Llvdl\Domino\Exception\DominoException */
     public function testDealGameWithNonExistingGameThrowsException()
     {
-        $this->gameRepositoryMock->expects($this->once())->method('findById')
-            ->with($this->identicalTo(42))
-            ->willReturn(NULL);
-
+        $this->expectForFindById(42, NULL);
         $this->gameService->deal(42);
     }
 
@@ -180,17 +201,61 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
         $property->setValue($obj, $value);
     }
 
-    private function expectForFindById($gameId, $resultGame)
+    private function expectForFindById($gameId, $resultGame, $count = null)
     {
-        $this->gameRepositoryMock->expects($this->any())->method('findById')
+        $this->gameRepositoryMock
+            ->expects($count === null ? $this->any() : $this->exactly($count))
+            ->method('findById')
             ->with($this->identicalTo($gameId))
             ->willReturn($resultGame);
     }
 
-    private function expectsForGetRecentGames($resultGames)
+    private function expectForGetRecentGames($resultGames, $count = null)
     {
-        $this->gameRepositoryMock->expects($this->any())->method('getRecentGames')
+        $this->gameRepositoryMock
+            ->expects($count === null ? $this->any() : $this->exactly($count))
+            ->method('getRecentGames')
             ->willReturn($resultGames);
+    }
 
+    private function expectPersistForGame(Game $game, $count = null)
+    {
+        $expectation = $this->gameRepositoryMock
+            ->expects($count === null ? $this->any() : $this->exactly($count))
+            ->method('persistGame')
+            ->with($this->identicalTo($game))
+            ->willReturn($game);
+    }
+
+    private function assertStoneCount($count, PlayerDto $player)
+    {
+        $this->assertCount($count, $player->getStones());
+    }
+
+    private function assertPlayerHasStone(GameDetailDto $game, $playerNumber, StoneDto $stoneDto)
+    {
+        $playerWithPlayerNumber = null;
+        foreach($game->getPlayers() as $player) {
+            if($player->getNumber() === $playerNumber) {
+                $this->assertNull($playerWithPlayerNumber, 'only one player has given player number');
+                $playerWithPlayerNumber = $player;
+            }
+        }
+        $this->assertNotNull($playerWithPlayerNumber, 'player with player number found');
+        $this->assertContainsStone($playerWithPlayerNumber->getStones(), $stoneDto);
+    }
+
+    private function assertContainsStone(array $stones, StoneDto $stone)
+    {
+        $containsStone = array_reduce(
+            $stones,
+            function($carry, StoneDto $other) use($stone) { 
+                return $carry ||
+                    ($stone->getTopValue() === $other->getTopValue()
+                    && $stone->getBottomValue() === $other->getBottomValue());
+            },
+            false
+        );
+        $this->assertTrue($containsStone, 'expected to find stone in stone collection');
     }
 }

@@ -11,6 +11,7 @@ use Llvdl\Domino\Game;
 use Llvdl\Domino\State;
 use Llvdl\Domino\Player;
 use Llvdl\Domino\Stone;
+use Llvdl\Domino\Turn;
 
 class GameRepositoryTest extends WebTestCase
 {
@@ -37,11 +38,6 @@ class GameRepositoryTest extends WebTestCase
         $this->gameRepository = new GameRepository($this->getContainer()->get('doctrine'));
     }
 
-    private function clearEntityManager()
-    {
-        $em = $this->getContainer()->get('doctrine')->getManager();
-        $em->clear();
-    }
 
     public function testPersistNewGame()
     {
@@ -174,6 +170,23 @@ class GameRepositoryTest extends WebTestCase
         $this->assertCount(3, $games);
     }
 
+    public function testPersistCurrentTurn()
+    {
+        $game = new Game('my game');
+        $game->deal();
+
+        $turn = $game->getCurrentTurn();
+        $this->assertNotNull($turn);
+
+        $this->gameRepository->persistGame($game);
+        $gameId = $game->getId();
+
+        $this->clearEntityManager();
+
+        $persistedGame = $this->gameRepository->findById($gameId);
+        $this->assertSameTurn($turn, $persistedGame->getCurrentTurn());
+    }
+
     /**
      * helper function to assign stones to players
      *
@@ -208,4 +221,19 @@ class GameRepositoryTest extends WebTestCase
             next($stoneValues);
         }
     }
+
+    private function assertSameTurn(Turn $expected, Turn $turn)
+    {
+        $this->assertTrue($expected->isEqual($turn));
+    }
+
+    /**
+     * clears the entity manager to prevent the entity manager from returning cached objects
+     */
+    private function clearEntityManager()
+    {
+        $em = $this->getContainer()->get('doctrine')->getManager();
+        $em->clear();
+    }
+
 }

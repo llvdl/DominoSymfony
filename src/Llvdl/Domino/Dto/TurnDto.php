@@ -1,6 +1,6 @@
 <?php
 
-namespace Llvdl\DominoDto;
+namespace Llvdl\Domino\Dto;
 
 class TurnDto
 {

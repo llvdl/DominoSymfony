@@ -12,6 +12,8 @@ class Game
     private $state;
     /** @var Player[]; */
     private $players = [];
+    /** @var Turn */
+    private $currentTurn;
 
     /** @param string $name */
     public function __construct($name)
@@ -20,6 +22,7 @@ class Game
         $this->name = $name;
         $this->state = State::getInitialState();
         $this->initializePlayers();
+        $this->currentTurn = null;
     }
 
     /** @return int */
@@ -59,6 +62,17 @@ class Game
         return $players;
     }
 
+    /**
+     * @return Turn|null current turn or NULL if game has not started or has finished
+     */
+    public function getCurrentTurn()
+    {
+        return $this->currentTurn;
+    }
+
+    /**
+     * Deals the stones to the players and starts the game.
+     */
     public function deal()
     {
         $stones = [];
@@ -73,15 +87,8 @@ class Game
             $player->addStones(array_splice($stones, 0, 7));
         }
 
+        $this->setFirstTurn();
         $this->state->start();
-    }
-
-    private function initializePlayers()
-    {
-        $this->players = [];
-        foreach ([1, 2, 3, 4] as $number) {
-            $this->players[] = new Player($this, $number);
-        }
     }
 
     /**
@@ -120,5 +127,28 @@ class Game
     public function removePlayer(\Llvdl\Domino\Player $player)
     {
         $this->players->removeElement($player);
+    }
+
+    private function initializePlayers()
+    {
+        $this->players = [];
+        foreach ([1, 2, 3, 4] as $number) {
+            $this->players[] = new Player($this, $number);
+        }
+    }
+
+    /**
+     * creates the first turn and assigns it to the player that can start.
+     */
+    private function setFirstTurn()
+    {
+        $startingPlayer = null;
+        foreach ($this->getPlayers() as $player) {
+            if ($player->canStart()) {
+                $startingPlayer = $player;
+                break;
+            }
+        }
+        $this->currentTurn = new Turn(1, $startingPlayer->getNumber());
     }
 }

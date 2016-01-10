@@ -28,6 +28,6 @@ class StoneDto
     /** @return int */
     public function getBottomValue()
     {
-        return $this->getBottomValue;
+        return $this->bottomValue;
     }
 }

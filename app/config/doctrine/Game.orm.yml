@@ -17,6 +17,13 @@ Llvdl\Domino\Game:
             joinColumn:
                 name: state_id
                 referencedColumnName: id
+        currentTurn:
+            targetEntity: Llvdl\Domino\Turn
+            cascade:
+                - persist
+            joinColumn:
+                name: turn_id
+                referencedColumnName: id
     oneToMany:
         players:
             targetEntity: Llvdl\Domino\Player

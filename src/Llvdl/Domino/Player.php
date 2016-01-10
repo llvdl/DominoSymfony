@@ -41,7 +41,7 @@ class Player
         return $this->stones;
     }
 
-    /** 
+    /**
      * @param Stone[] $stones
      *
      * @todo remove horrible clutch to assign player to stone to have the ORM persist stones
@@ -90,5 +90,22 @@ class Player
         $this->name = $name;
 
         return $this;
+    }
+
+    /**
+     * Determines if the player can start the game (i.e. make the first move).
+     *
+     * @return bool TRUE if the the player can start the game, otherwise FALSE
+     */
+    public function canStart()
+    {
+        $doubleSix = new Stone(6, 6);
+        foreach ($this->getStones() as $stone) {
+            if ($stone->isEqual($doubleSix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

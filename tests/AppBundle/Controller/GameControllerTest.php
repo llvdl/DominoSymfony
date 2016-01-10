@@ -230,6 +230,22 @@ class GameControllerTest extends MockeryWebTestCase
         $this->assertContains('7', $crawler->filter('#container .players .player .stone-count')->eq(0)->text());
     }
 
+    public function testAfterGameDealTurnNumberIsOneAndAPlayerHasTurn()
+    {
+        $gameDto = (new GameDetailDtoBuilder())
+                ->id(1)
+                ->stateStarted()
+                ->turn(1, 3)
+                ->get();
+        $this->expectForGameById(1, $gameDto);
+
+        $crawler = $this->getClient()->request('GET', '/game/1');
+        $this->assertStatusCode(self::STATUS_CODE_OK);
+
+        $this->assertContains('1', $crawler->filter('#container .current-turn .turn-number')->text());
+        $this->assertContains('3', $crawler->filter('#container .current-turn .player-number')->text());
+    }
+
     private function createGame($id, $name)
     {
         $game = new Game($name);
