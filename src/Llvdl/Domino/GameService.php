@@ -4,6 +4,7 @@ namespace Llvdl\Domino;
 
 use Llvdl\Domino\Dto\GameDetailDto;
 use Llvdl\Domino\Dto\GameDetailDtoBuilder;
+use Llvdl\Domino\Dto\PlayDto;
 use Llvdl\Domino\Exception\DominoException;
 
 class GameService
@@ -53,11 +54,16 @@ class GameService
      */
     public function deal($gameId)
     {
-        $game = $this->gameRepository->findById($gameId);
-        if ($game === null) {
-            throw new DominoException('could not find game with id '.$gameId);
-        }
+        $game = $this->loadGame($gameId);
         $game->deal();
+        $this->gameRepository->persistGame($game);
+    }
+
+    public function play($gameId, $playerId, PlayDto $play)
+    {
+        $game = $this->loadGame($gameId);
+        $player = $game->getPlayer($playerNumber);
+        $player->play($play);
         $this->gameRepository->persistGame($game);
     }
 
@@ -82,5 +88,22 @@ class GameService
         }
 
         return $builder->get();
+    }
+
+    /**
+     * @param int $gameId
+     *
+     * @return Game
+     *
+     * @throws DominoException
+     */
+    private function loadGame($gameId)
+    {
+        $game = $this->gameRepository->findById($gameId);
+        if ($game === null) {
+            throw new DominoException('could not find game with id '.$gameId);
+        }
+
+        return $game;
     }
 }

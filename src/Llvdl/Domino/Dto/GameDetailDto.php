@@ -67,4 +67,16 @@ class GameDetailDto
     {
         return $this->currentTurn;
     }
+
+    /** @return PlayerDto|null player dto with player number or NULL if not found */
+    public function getPlayerByNumber($number)
+    {
+        foreach ($this->getPlayers() as $player) {
+            if ($player->getNumber() === intval($number)) {
+                return $player;
+            }
+        }
+
+        return;
+    }
 }

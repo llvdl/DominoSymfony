@@ -4,6 +4,7 @@ namespace AppBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use AppBundle\Form\CreateGameForm;
@@ -12,7 +13,7 @@ use AppBundle\Form\GameDetailForm;
 use AppBundle\Form\Type\GameDetailFormType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\Form\FormInterface;
 use Llvdl\Domino\GameService;
 use Llvdl\Domino\Dto\GameDetailDto;
 use Llvdl\Domino\Exception\DominoException;
@@ -21,6 +22,9 @@ class GameController extends \AppBundle\Controller\BaseController
 {
     /** @var GameService */
     private $gameService;
+
+    /** @var GameDetailDto[] */
+    private $gameCache = [];
 
     const ROUTE_GAME_DETAIL = 'app.game_detail';
 
@@ -31,13 +35,47 @@ class GameController extends \AppBundle\Controller\BaseController
     }
 
     /**
-     * @Template("game/game-index.html.twig")
+     * GET /game, POST /game.
+     * 
+     * @return Response
      */
     public function indexAction(Request $request)
     {
         $formObject = new CreateGameForm();
         $form = $this->createForm(CreateGameFormType::class, $formObject);
 
+        return $this->handleCreateGameForm($request, $form, $formObject)
+            ?: $this->getIndexResponse($form);
+    }
+
+    /**
+     * GET /game/{gameId}, POST /game/{gameId}.
+     *
+     * @return Response
+     */
+    public function viewAction(Request $request, $gameId)
+    {
+        try {
+            $game = $this->getGameById($gameId);
+            $formObject = new GameDetailForm($gameId);
+            $formObject->setCanDeal($game->getState() == GameDetailDto::STATE_READY);
+            $form = $this->createForm(GameDetailFormType::class, $formObject);
+
+            return $this->handleGameDetailForm($request, $form, $formObject)
+                ?: $this->getViewResponse($gameId, $form);
+        } catch (DominoException $e) {
+            throw new BadRequestHttpException($e->getMessage());
+        }
+    }
+
+    /**
+     * @param Request       $request
+     * @param FormInterface $form
+     *
+     * @return Response|null
+     */
+    private function handleCreateGameForm(Request $request, FormInterface $form, CreateGameForm $formObject)
+    {
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $gameId = $this->gameService->createGame($formObject->getName());
@@ -45,47 +83,70 @@ class GameController extends \AppBundle\Controller\BaseController
             return $this->redirectToRoute(self::ROUTE_GAME_DETAIL, ['gameId' => $gameId]);
         }
 
-        $games = $this->gameService->getRecentGames();
-
-        return [
-            'form' => $form->createView(),
-            'games' => $games,
-        ];
+        return;
     }
 
     /**
-     * @Template("game/game-view.html.twig")
+     * @return Response
      */
-    public function viewAction(Request $request, $gameId)
+    private function getIndexResponse(FormInterface $form)
     {
-        try {
-            $formObject = new GameDetailForm();
-            $form = $this->createForm(GameDetailFormType::class, $formObject);
+        $games = $this->gameService->getRecentGames();
 
-            $form->handleRequest($request);
-            if ($form->isSubmitted() && $form->isValid()) {
-                if ($request->request->get('deal-game')) {
-                    $this->gameService->deal($gameId);
+        return $this->render('game/game-index.html.twig', [
+            'form' => $form->createView(),
+            'games' => $games,
+        ]);
+    }
 
-                    return $this->redirectToRoute(self::ROUTE_GAME_DETAIL, ['gameId' => $gameId]);
-                }
+    /**
+     * @return Response|null
+     */
+    private function handleGameDetailForm(Request $request, FormInterface $form, GameDetailForm $formObject)
+    {
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($form->get('dealGame')->isClicked()) {
+                $this->gameService->deal($formObject->getGameId());
 
-                // no buttons match
-                throw new BadRequestHttpException('could not determine the submit action');
+                return $this->redirectToRoute(self::ROUTE_GAME_DETAIL, ['gameId' => $formObject->getGameId()]);
             }
 
-            $gameDetail = $this->gameService->getGameById($gameId);
-            if ($gameDetail === null) {
-                throw new NotFoundHttpException('Game with given id was not found');
-            }
-
-            return [
-                'form' => $form->createView(),
-                'game' => $gameDetail,
-                'canDeal' => $gameDetail->getState() === GameDetailDto::STATE_READY,
-            ];
-        } catch (DominoException $e) {
-            throw new BadRequestHttpException($e->getMessage());
+            throw new BadRequestHttpException('invalid or missing submit action');
         }
+
+        return;
+    }
+
+    /**
+     * @param int           $gameId
+     * @param FormInterface $form
+     *
+     * @return Response
+     */
+    private function getViewResponse($gameId, FormInterface $form)
+    {
+        $gameDetail = $this->getGameById($gameId);
+
+        return $this->render('game/game-view.html.twig', [
+            'form' => $form->createView(),
+            'game' => $gameDetail,
+            'canDeal' => $gameDetail->getState() === GameDetailDto::STATE_READY,
+        ]);
+    }
+
+    /** 
+     * @return GameDetailDto
+     *
+     * @throws NotFoundHttpException if game was not found
+     */
+    private function getGameById($gameId)
+    {
+        $gameDetail = $this->gameService->getGameById($gameId);
+        if ($gameDetail === null) {
+            throw new NotFoundHttpException('Game cannot be found');
+        }
+
+        return $gameDetail;
     }
 }

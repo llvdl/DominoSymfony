@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div id="wrapper">
+        <div id="container">
+            <h1>
+                <a href="{{ path('app.game_overview') }}">Games</a> 
+                | <a href="{{ path('app.game_detail', {'gameId': game.id}) }}"<span>{{ game.name }}</a>
+                | Player {{ player.number }}
+            </h1>
+
+            <p class="game-state"><label>State:</label> {{game.state}}<p>
+            {% if game.currentTurn %}
+                <p class="turn">Turn: <span class="turn-number">{{ game.currentTurn.number }}</span></p>
+            {% endif %}
+
+            <h2>Stones</h2>
+            <p class="stones">
+                {% for stone in player.stones %}
+                    {{ include('player/stone.html.twig', {stone: stone, crossVerticals: false}) }}
+                {% endfor %}
+                {% if not player.stones %}No stones left.{% endif %}
+            </p>
+
+            {{ form_start(form) }}
+            {{ form_widget(form) }}
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ asset('css/domino.css') }}" />
+{% endblock %}

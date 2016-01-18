@@ -35,7 +35,7 @@ class GameRepositoryTest extends WebTestCase
 
         $fixtures = [];
         $this->loadFixtures($fixtures);
-        $this->gameRepository = new GameRepository($this->getContainer()->get('doctrine'));
+        $this->gameRepository = new GameRepository($em);
     }
 
 

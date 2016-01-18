@@ -8,6 +8,13 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
+/**
+ * Base controller with some handy generic controller functions.
+ *
+ * This class differs from the Symfony Base Controller in that
+ * it does not use the container for dependencies, but has those
+ * injected instead
+ */
 abstract class BaseController
 {
     /** @var EngineInterface */
@@ -46,5 +53,11 @@ abstract class BaseController
     protected function generateUrl($route, $parameters = array(), $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH)
     {
         return $this->router->generate($route, $parameters, $referenceType);
+    }
+
+    /** @see Symfony\Bundle\FrameworkBundle\Controller\Controller::render */
+    protected function render($view, array $parameters = array(), Response $response = null)
+    {
+        return $this->templating->renderResponse($view, $parameters, $response);
     }
 }

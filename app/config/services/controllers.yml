@@ -6,3 +6,11 @@ services:
             - "@router"
             - "@form.factory"
             - "@app.game_service"
+
+    app.player_controller:
+        class: AppBundle\Controller\PlayerController
+        arguments:
+            - "@templating"
+            - "@router"
+            - "@form.factory"
+            - "@app.game_service"

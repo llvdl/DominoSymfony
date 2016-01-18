@@ -3,28 +3,35 @@
 namespace AppBundle\Repository;
 
 use Llvdl\Domino\Game;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\ORM\EntityManager;
 
 class GameRepository implements \Llvdl\Domino\GameRepository
 {
-    /** @var RegistryInterface */
-    private $doctrine;
+    /** @var EntityManager */
+    private $entityManager;
 
-    public function __construct(RegistryInterface $doctrine)
+    public function __construct(EntityManager $entityManager)
     {
-        $this->doctrine = $doctrine;
+        $this->entityManager = $entityManager;
     }
 
     /** @see Llvdl\Domino\GameRepository::getRecentGames */
     public function getRecentGames()
     {
-        return $this->getGameRepository()->findAll();
+        $qb = $this->createBaseQueryBuilder();
+
+        return $qb->getQuery()->getResult();
     }
 
     /** @see Llvdl\Domino\GameRepository::findById */
     public function findById($id)
     {
-        return $this->getGameRepository()->find($id);
+        $qb = $this->createBaseQueryBuilder();
+        $qb
+            ->where('g.id = :id')
+            ->setParameter('id', $id);
+
+        return $qb->getQuery()->getOneOrNullResult();
     }
 
     /** @see Llvdl\Domino\GameRepository::createGame */
@@ -38,12 +45,23 @@ class GameRepository implements \Llvdl\Domino\GameRepository
     /** @return Doctrine\ORM\EntityManager */
     private function getEntityManager()
     {
-        return $this->doctrine->getManager();
+        return $this->entityManager;
     }
 
-    /** @return Doctrine\ORM\EntityRepository */
-    private function getGameRepository()
+    private function createBaseQueryBuilder()
     {
-        return $this->doctrine->getRepository('Llvdl\Domino\Game');
+        $qb = $this->getEntityManager()->createQueryBuilder();
+        $qb->select('g')
+            ->from(Game::class, 'g')
+            ->leftJoin('g.players', 'p')
+            ->leftJoin('p.stones', 's')
+            ->leftJoin('g.state', 'gs')
+            ->leftJoin('g.currentTurn', 't')
+            ->addSelect('p')
+            ->addSelect('s')
+            ->addSelect('gs')
+            ->addSelect('t');
+
+        return $qb;
     }
 }

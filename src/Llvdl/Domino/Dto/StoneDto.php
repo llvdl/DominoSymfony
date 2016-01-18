@@ -30,4 +30,15 @@ class StoneDto
     {
         return $this->bottomValue;
     }
+
+    /**
+     * @param StoneDto $other
+     *
+     * @return bool
+     */
+    public function isEqual(StoneDto $other)
+    {
+        return $this->topValue === $other->topValue
+            && $this->bottomValue === $other->bottomValue;
+    }
 }

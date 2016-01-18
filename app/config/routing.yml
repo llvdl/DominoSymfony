@@ -6,6 +6,10 @@ app.game_detail:
     path:     /game/{gameId}
     defaults: { _controller: app.game_controller:viewAction }
     methods:  [GET, POST]
+app.player_detail:
+    path:     /game/{gameId}/player/{playerNumber}
+    defaults: { _controller: app.player_controller:viewAction }
+    methods:  [GET, POST]
 
 app:
     resource: "@AppBundle/Controller/"

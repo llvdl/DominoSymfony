@@ -2,4 +2,4 @@ services:
     app.game_repository:
         class: AppBundle\Repository\GameRepository
         arguments:
-            - "@doctrine"
+            - "@doctrine.orm.entity_manager"

@@ -1,0 +1,7 @@
+{% if crossVerticals %}
+    {% if stone.topValue == stone.bottomValue %}&#{{ 127024 + stone.topValue * 7 + stone.bottomValue }};{% endif %}
+    {% if stone.topValue != stone.bottomValue %}&#{{ 127075 + stone.topValue * 7 + stone.bottomValue }};{% endif %}
+{% endif %}
+{% if not crossVerticals %}
+    &#{{ 127075 + stone.topValue * 7 + stone.bottomValue }};
+{% endif %}

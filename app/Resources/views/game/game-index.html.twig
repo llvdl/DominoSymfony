@@ -3,7 +3,7 @@
 {% block body %}
     <div id="wrapper">
         <div id="container">
-	    <h1><span>Games</h1>
+            <h1><span>Games</h1>
             <div class="game-list">
                 {% if games %}
                   <ul>
@@ -20,8 +20,7 @@
             <h2>Create a new Game</h2>
             {{ form_start(form) }}
                 {{ form_widget(form) }}
-                <input type="submit" name="create-game" value="Create" class="btn btn-default pull-right" />
             {{ form_end(form) }}
-	</div>
+        </div>
     </div>
 {% endblock %}

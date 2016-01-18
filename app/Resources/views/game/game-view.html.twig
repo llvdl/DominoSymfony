@@ -5,13 +5,10 @@
         <div id="container">
             <h1><a href="{{ path('app.game_overview') }}">Games</a> | <span>{{ game.name }}</h1>
 
-            <p class="game-state"><label>State:<label> {{game.state}}<p>
+            <p class="game-state"><label>State:</label> {{game.state}}<p>
 
             {{ form_start(form) }}
-            {{ form_widget(form) }}
-            {% if canDeal  %}
-                <input type="submit" name="deal-game" value="Deal" class="btn btn-default pull-right" />
-            {% endif %}
+                {{ form_widget(form) }}
             {{ form_end(form) }}
 
             {% if game.currentTurn %}
@@ -26,7 +23,13 @@
             {% if game.players %}
             <ul class="players">
                 {% for player in game.players %}
-                <li class="player">Player {{ player.number }} (<span class="stone-count">{{ player.stones|length }}<span> stones)</li>
+                <li class="player {% if game.currentTurn and player.number == game.currentTurn.currentPlayerNumber %}active{% endif%}">
+                    <a class="detail-link" href="{{ path('app.player_detail', {'gameId': game.id, 'playerNumber': player.number}) }}"
+                        >Player {{ player.number }}</a
+                    >
+                    (<span class="stone-count">{{ player.stones|length }}<span> stones)
+                    {% if game.currentTurn and player.number == game.currentTurn.currentPlayerNumber %}*{% endif %}
+                </li>
                 {% endfor %}
             </ul>
             {% endif %}
