@@ -37,4 +37,5 @@ class MockeryWebTestCase extends WebTestCase
     {
         return $this->client;
     }
+
 }
