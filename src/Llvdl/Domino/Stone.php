@@ -2,6 +2,8 @@
 
 namespace Llvdl\Domino;
 
+use Llvdl\Util\Utf8;
+
 class Stone
 {
     /**
@@ -57,5 +59,11 @@ class Stone
     public function isEqual(Stone $other)
     {
         return $this->topValue === $other->topValue && $this->bottomValue === $other->bottomValue;
+    }
+
+    /** @return string */
+    public function __toString()
+    {
+        return Utf8::chr(0x1F063 + $this->getTopValue() * 7 + $this->getBottomValue());
     }
 }

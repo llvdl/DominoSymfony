@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "438831f97b257fd4ef6f5004e2f7f56d",
-    "content-hash": "5008f202ec21453f1ef9fc8f665035b0",
+    "hash": "f37e612c795c33b2aa20f3f13833e1a8",
+    "content-hash": "fa3876998a9a919a984b99ebc2bb49de",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -871,6 +871,42 @@
                 "sql"
             ],
             "time": "2014-01-12 16:20:24"
+        },
+        {
+            "name": "llvdl/util-utf8",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/llvdl/util-utf8.git",
+                "reference": "ed3ae5e146a4f3e193b0df5540152a392061c794"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/llvdl/util-utf8/zipball/ed3ae5e146a4f3e193b0df5540152a392061c794",
+                "reference": "ed3ae5e146a4f3e193b0df5540152a392061c794",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Llvdl\\": "src/Llvdl/"
+                }
+            },
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "llvdl",
+                    "email": "llvdl@protonmail.com"
+                }
+            ],
+            "description": "Utf8 utility function(s)",
+            "support": {
+                "source": "https://github.com/llvdl/util-utf8/tree/1.0",
+                "issues": "https://github.com/llvdl/util-utf8/issues"
+            },
+            "time": "2016-01-24 20:55:08"
         },
         {
             "name": "monolog/monolog",

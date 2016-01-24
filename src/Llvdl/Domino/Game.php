@@ -2,6 +2,8 @@
 
 namespace Llvdl\Domino;
 
+use Llvdl\Domino\Exception\InvalidMoveException;
+
 class Game
 {
     /** @var int */
@@ -145,6 +147,25 @@ class Game
         $this->players->removeElement($player);
     }
 
+    /**
+     * @param Player $player
+     * @param Move   $move
+     */
+    public function addMove(Player $player, Move $move)
+    {
+        if (!$this->getState()->isStarted()) {
+            throw new InvalidMoveException('Game has not started or is already finished');
+        }
+        if ($move->getTurnNumber() !== $this->getCurrentTurn()->getNumber()) {
+            throw new InvalidMoveException('Turn number move does not match current game turn number');
+        }
+        if ($player->getNumber() !== $this->getCurrentTurn()->getPlayerNumber()) {
+            throw new InvalidMoveException('player cannot move at the current turn (current player is '.$this->getCurrentTurn()->getPlayerNumber().')');
+        }
+
+        $this->nextTurn();
+    }
+
     private function initializePlayers()
     {
         $this->players = [];
@@ -166,5 +187,13 @@ class Game
             }
         }
         $this->currentTurn = new Turn(1, $startingPlayer->getNumber());
+    }
+
+    /**
+     * creates a new turn and assigns it to the next player.
+     */
+    private function nextTurn()
+    {
+        $this->currentTurn = $this->currentTurn->next();
     }
 }

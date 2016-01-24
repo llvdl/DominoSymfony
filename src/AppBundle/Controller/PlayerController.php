@@ -46,8 +46,6 @@ class PlayerController extends \AppBundle\Controller\BaseController
 
         return $this->handlePlayerForm($request, $form, $game, $player)
             ?: $this->getViewResponse($form, $game, $player);
-
-        return;
     }
 
     /**

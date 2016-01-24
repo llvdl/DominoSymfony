@@ -2,6 +2,8 @@
 
 namespace Llvdl\Domino;
 
+use Llvdl\Domino\Exception\InvalidMoveException;
+
 class Player
 {
     /** @var int only used by ORM layer */
@@ -110,10 +112,53 @@ class Player
     }
 
     /**
-     * Initiate a move by playing a stone.
+     * @param $stone
+     *
+     * @return bool
+     */
+    public function hasStone(Stone $stone)
+    {
+        foreach ($this->stones as $playerStone) {
+            if ($stone->isEqual($playerStone)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Stone $stone
+     */
+    public function removeStone(Stone $stone)
+    {
+        foreach ($this->stones as $k => $playerStone) {
+            if ($stone->isEqual($playerStone)) {
+                unset($this->stones[$k]);
+            }
+        }
+    }
+
+    /**
+     * @param Play $play
      */
     public function play(Play $play)
     {
-        throw new Exception('not implemented');
+        if (!$this->hasStone($play->getStone())) {
+            throw new InvalidMoveException('player does not have stone');
+        }
+
+        try {
+            $this->removeStone($play->getStone());
+            $this->game->addMove($this, $play);
+        } catch (InvalidMoveException $e) {
+            $this->addStones([$play->getStone()]);
+            throw $e;
+        }
+    }
+
+    public function __toString()
+    {
+        return 'Player(number: '.$this->number.')';
     }
 }

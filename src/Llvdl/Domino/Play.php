@@ -4,11 +4,8 @@ namespace Llvdl\Domino;
 
 use Llvdl\Domino\Exception\DominoException;
 
-class Play
+class Play extends Move
 {
-    /** @var int */
-    private $turnNumber;
-
     /** @var Stone */
     private $stone;
 
@@ -22,9 +19,8 @@ class Play
      */
     public function __construct($turnNumber, Stone $stone, $side)
     {
-        if ($turnNumber <= 0) {
-            throw new DominoException('invalid turn number');
-        }
+        parent::__construct($turnNumber);
+
         if ($stone === null) {
             throw new DominoException('stone may not be null');
         }
@@ -35,12 +31,6 @@ class Play
         $this->turnNumber = $turnNumber;
         $this->stone = $stone;
         $this->side = $side;
-    }
-
-    /** @return int */
-    public function getTurnNumber()
-    {
-        return $this->turnNumber;
     }
 
     /** @return Stone */
@@ -60,5 +50,11 @@ class Play
     {
         return $this->getStone()->isEqual($other->getStone())
             && $this->getSide() === $other->getSide();
+    }
+
+    /** @return string */
+    public function __toString()
+    {
+        return 'Play(turn: '.$this->getTurnNumber().', stone: '.$this->getStone()->__toString().')';
     }
 }

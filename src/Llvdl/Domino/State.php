@@ -88,4 +88,10 @@ class State
 
         return $this;
     }
+
+    /** @return bool */
+    public function isStarted()
+    {
+        return $this->name === self::STARTED;
+    }
 }

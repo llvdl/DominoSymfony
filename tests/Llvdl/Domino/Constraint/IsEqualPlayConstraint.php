@@ -16,11 +16,17 @@ class IsEqualPlayConstraint extends \PHPUnit_Framework_Constraint
 
     public function matches($play)
     {
-        return $play->isEqual($this->other);
+        $match = $play !== null && $play instanceof Play && $play->isEqual($this->other);
+        return $match;
     }
 
     public function toString()
     {
-        return 'matches play';
+        return 'matches ' . $this->other;
+    }
+    
+    public function failureDescription($other)
+    {
+        return $other . ' ' . $this->toString();
     }
 }

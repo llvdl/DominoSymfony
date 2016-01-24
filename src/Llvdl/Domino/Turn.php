@@ -34,4 +34,15 @@ class Turn
         return $this->getNumber() === $other->getNumber()
             && $this->getPlayerNumber() === $other->getPlayerNumber();
     }
+
+    /**
+     * @return Turn
+     */
+    public function next()
+    {
+        $turnNumber = $this->getNumber() + 1;
+        $playerNumber = $this->getPlayerNumber() === 4 ? 1 : $this->getPlayerNumber() + 1;
+
+        return new self($turnNumber, $playerNumber);
+    }
 }

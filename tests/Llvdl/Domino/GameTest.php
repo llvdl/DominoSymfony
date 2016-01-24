@@ -5,6 +5,8 @@ namespace Tests\Llvdl\Domino;
 use Llvdl\Domino\Game;
 use Llvdl\Domino\Player;
 use Llvdl\Domino\Stone;
+use Llvdl\Domino\Play;
+use Llvdl\Domino\Table;
 
 class GameTest extends \PHPUnit_Framework_TestCase
 {
@@ -68,6 +70,21 @@ class GameTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testAddMovePlayFirstStone()
+    {
+        $this->game->deal();
+
+        $currentPlayerNumber = $this->game->getCurrentTurn()->getPlayerNumber();
+        $player = $this->game->getPlayerByPlayerNumber($currentPlayerNumber);
+
+        $this->assertEquals(1, $this->game->getCurrentTurn()->getNumber(), 'current turn number is 1');
+
+        $play = new Play(1, new Stone(6,6), Table::SIDE_LEFT);
+        $this->game->addMove($player, $play);
+
+        $this->assertEquals(2, $this->game->getCurrentTurn()->getNumber(), 'current turn number is 2');
+    }
+
     private function assertPlayerCount($playerCount, Game $game)
     {
         $this->assertCount($playerCount, $game->getPlayers());
@@ -77,7 +94,7 @@ class GameTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertCount($stoneCount, $player->getStones());
     }
-
+    
     private function assertContainsStone(Stone $stone, array $stones)
     {
         $hasStone = array_reduce(
@@ -87,6 +104,7 @@ class GameTest extends \PHPUnit_Framework_TestCase
             false);
         $this->assertTrue($hasStone);
     }
+
 
     /** @return Stone[] collection of all stones */
     private function getFullStoneSet()

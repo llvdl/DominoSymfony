@@ -190,20 +190,21 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
         $this->assertPlayerHasStone($gameDetailDto, $currentPlayerNumber, new StoneDto(6, 6));
     }
 
-    public function testPlay()
+    public function testPlayCallsPlayOnPlayer()
     {
-        $game = $this->createGame(42, 'test game');
-        $players = [
-            1=>$this->createPlayerMock($game, 1, 'player 1'),
-            2=>$this->createPlayerMock($game, 2, 'player 2'),
-            3=>$this->createPlayerMock($game, 3, 'player 3'),
-            4=>$this->createPlayerMock($game, 4, 'player 4')
-        ];
-        $this->setPrivateProperty($game, 'players', $players);
-
-        $this->expectForFindById(42, $game);
-
-        $players[3]->expects($this->once())
+        $game = $this->createGameMock(42);
+        $player = $this->createPlayerMock($game, 1, 'player 1');
+        
+        $this->gameRepositoryMock->expects($this->once())->method('findById')
+            ->with($this->identicalTo(42))
+            ->willReturn($game);
+        
+        $game->expects($this->any())
+            ->method('getPlayerByPlayerNumber')
+            ->with($this->equalTo(3))
+            ->willReturn($player);
+            
+        $player->expects($this->once())
             ->method('play')
             ->with($this->equalToPlay(new Play(1, new Stone(6,6), Table::SIDE_LEFT)));
 
@@ -257,6 +258,17 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
             false
         );
         $this->assertTrue($containsStone, 'expected to find stone in stone collection');
+    }
+    
+    private function createGameMock($id = null)
+    {
+        $mock = $this->getMockBuilder(Game::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        
+        $mock->expects($this->any())->method('getId')->willReturn($id);
+        
+        return $mock;
     }
 
     private function createPlayerMock(Game $game, $playerNumber, $name)
