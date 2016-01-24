@@ -1,6 +1,14 @@
 services:
-    app.game_controller:
-        class: AppBundle\Controller\GameController
+    app.game_overview_controller:
+        class: AppBundle\Controller\GameOverviewController
+        arguments:
+            - "@templating"
+            - "@router"
+            - "@form.factory"
+            - "@app.game_service"
+
+    app.game_detail_controller:
+        class: AppBundle\Controller\GameDetailController
         arguments:
             - "@templating"
             - "@router"

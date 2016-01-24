@@ -51,18 +51,6 @@ class PlayerForm
         return $this->turnNumber;
     }
 
-    /** @param int $turnNumber */
-    public function setTurnNumber($turnNumber)
-    {
-        $this->turnNumber = $turnNumber;
-    }
-
-    /** @param Move[] */
-    public function setMoves(array $moves)
-    {
-        $this->moves = $moves;
-    }
-
     /** @return Move[] */
     public function getMoves()
     {

@@ -37,7 +37,7 @@ class PlayerControllerTest extends MockeryWebTestCase
         $this->expectForPlay($game->getId(), 1, new PlayDto(1, new StoneDto(6,6), PlayDto::SIDE_LEFT));
 
         $crawler = $this->openPlayerPage(1, 1);
-        $this->clickPlayButton($crawler, '6_6-left');
+        $this->clickPlayButton($crawler, 1, '6_6-left');
     }
 
     /**
@@ -62,11 +62,14 @@ class PlayerControllerTest extends MockeryWebTestCase
      * @param Crawler $crawler
      * @param string $moveValue
      */
-    private function clickPlayButton(Crawler &$crawler, $moveValue)
+    private function clickPlayButton(Crawler &$crawler, $turnNumber, $moveValue)
     {
         $button = $crawler->selectButton(self::PLAY_BUTTON_NAME);
         $this->assertEquals(1, count($button), 'play button is shown');
-        $form = $button->form(['player_form[move]' => $moveValue]);
+        $form = $button->form([
+            'player_form[turnNumber]' => $turnNumber,
+            'player_form[move]' => $moveValue
+        ]);
         $crawler= $this->getClient()->submit($form);
 
         $this->assertStatusCode(StatusCode::MOVED_TEMPORARILY);

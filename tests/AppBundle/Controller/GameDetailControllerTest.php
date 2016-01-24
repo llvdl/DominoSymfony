@@ -11,59 +11,12 @@ use Llvdl\Domino\Exception\DominoException;
 use Tests\AppBundle\Controller\Http\StatusCode;
 use Symfony\Component\DomCrawler\Crawler;
 
-class GameControllerTest extends MockeryWebTestCase
+class GameDetailControllerTest extends MockeryWebTestCase
 {
     use Traits\GameServiceExpectationTrait;
     use Traits\StatusCodeAsserterTrait;
 
     const DEAL_BUTTON_NAME = 'game_detail_form[dealGame]';
-    const CREATE_GAME_BUTTON_NAME = 'create_game_form_create';
-
-    public function testIndexNoGamesAreAvailableIsShown()
-    {
-        $this->expectForRecentGames([]);
-
-        $crawler = $this->openGameIndexPage();
-
-        $this->assertTitleContains('Games', $crawler);
-        $this->assertContains('No games are available.', $crawler->filter('#container .game-list')->text(), 'message is shown that there are no games available');
-    }
-
-    public function testIndexOneGameIsShown()
-    {
-        $this->expectForRecentGames([$this->createGame(123, 'My Game')]);
-
-        $crawler = $this->openGameIndexPage();
-
-        $this->assertTitleContains('Games', $crawler);
-        $this->assertEquals(1, $crawler->filter('#container .game-list ul li')->count(), 'one game available');
-        $this->assertContains('My Game', $crawler->filter('#container .game-list ul li a')->text());
-        $this->assertContains('/game/123', $crawler->filter('#container .game-list ul li a')->attr('href'));
-    }
-
-
-    public function testIndexManyGamesAreShown()
-    {
-        $games = [
-                $this->createGame(123, 'My Game 1'),
-                $this->createGame(345, 'My Game 2'),
-                $this->createGame(567, 'My Game 3'),
-                $this->createGame(789, 'My Game 4')
-        ];
-
-        $this->expectForRecentGames($games);
-
-        $crawler = $this->openGameIndexPage();
-
-        $this->assertTitleContains('Games', $crawler);
-        $this->assertEquals(count($games), $crawler->filter('#container .game-list ul li')->count(), 'all games available');
-
-        for($i = 0; $i < count($games); ++$i) {
-            $link = $crawler->filter('#container .game-list ul li')->eq($i)->filter('a');
-            $this->assertContains($games[$i]->getName(), $link->text());
-            $this->assertContains('game/'.$games[$i]->getId(), $link->attr('href'));
-        }
-    }
 
     public function testGameDetailReturns404IfNotFound()
     {
@@ -113,28 +66,6 @@ class GameControllerTest extends MockeryWebTestCase
         $this->assertEquals('/game/312/player/2', $crawler->filter('#container .players .player a')->eq(1)->attr('href'));
         $this->assertEquals('/game/312/player/3', $crawler->filter('#container .players .player a')->eq(2)->attr('href'));
         $this->assertEquals('/game/312/player/4', $crawler->filter('#container .players .player a')->eq(3)->attr('href'));
-    }
-
-    public function testGameCanBeCreatedAndReturnsId()
-    {
-        $gameName = 'My new game ' . uniqid();
-        $gameBeforeCreated = null;
-        $gameAfterCreated = (new GameDetailDtoBuilder())->id(42)->stateReady()->name($gameName)->get();
-        $gameCreated = false;
-
-        $this->expectForGameById(42, function() use(&$gameCreated, $gameBeforeCreated, $gameAfterCreated) {
-            return $gameCreated ? $gameAfterCreated : $gameBeforeCreated;
-        }, null);
-        $this->expectCreateGame($gameName, function() use (&$gameCreated) {
-                $gameCreated = true;
-                return 42;
-        });
-        $this->expectForRecentGames([]);
-
-        // open game page, which has the create game form
-        $crawler = $this->openGameIndexPage();
-        $this->clickCreateGameButton($crawler, $gameName);
-        $this->assertContains($gameName, $crawler->filter('#container h1')->text(), 'game name is shown in title');
     }
 
     public function testGameCanBeDealt()
@@ -242,26 +173,6 @@ class GameControllerTest extends MockeryWebTestCase
         $this->assertContains('3', $crawler->filter('#container .current-turn .player-number')->text());
     }
 
-    /**
-     * @param int $id
-     * @param string $name
-     * @return GameDetailDto
-     */
-    private function createGame($id, $name)
-    {
-        $gameDetailDto = new GameDetailDto($id, $name, null, [], []);
-        return $gameDetailDto;
-    }
-
-    /** @return Crawler */
-    private function openGameIndexPage()
-    {
-        $crawler = $this->getClient()->request('GET', '/game');
-        $this->assertEquals(200, $this->getClient()->getResponse()->getStatusCode());
-
-        return $crawler;
-    }
-
     private function openGameDetailPage($gameId)
     {
         $url = strtr('/game/{gameId}', ['{gameId}' => $gameId]);
@@ -269,17 +180,6 @@ class GameControllerTest extends MockeryWebTestCase
         $this->assertStatusCode(StatusCode::OK);
 
         return $crawler;
-    }
-
-    private function clickCreateGameButton(Crawler &$crawler, $gameName)
-    {
-        $form = $crawler->selectButton(self::CREATE_GAME_BUTTON_NAME)->form();
-        $form['create_game_form[name]'] = $gameName;
-        $crawler = $this->getClient()->submit($form);
-
-        $this->assertStatusCode(StatusCode::MOVED_TEMPORARILY);
-        $crawler = $this->getClient()->followRedirect();
-        $this->assertStatusCode(StatusCode::OK);
     }
 
     private function clickDealButton(Crawler &$crawler)

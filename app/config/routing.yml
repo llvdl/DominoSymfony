@@ -1,10 +1,10 @@
 app.game_overview:
     path:     /game
-    defaults: { _controller: app.game_controller:indexAction }
+    defaults: { _controller: app.game_overview_controller:indexAction }
     methods:  [GET, POST]
 app.game_detail:
     path:     /game/{gameId}
-    defaults: { _controller: app.game_controller:viewAction }
+    defaults: { _controller: app.game_detail_controller:viewAction }
     methods:  [GET, POST]
 app.player_detail:
     path:     /game/{gameId}/player/{playerNumber}

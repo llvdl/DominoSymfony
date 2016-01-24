@@ -55,7 +55,8 @@ trait GameServiceExpectationTrait
     private function expectCreateGame($gameName, $result)
     {
         $expectation = $this->getGameServiceMock()
-            ->shouldReceive('createGame')->with($gameName);
+            ->shouldReceive('createGame')
+            ->with($gameName);
 
         if(is_callable($result)) {
             $expectation->andReturnUsing($result);
