@@ -59,18 +59,24 @@ class GameService
         $this->gameRepository->persistGame($game);
     }
 
-    public function play($gameId, $playerId, PlayDto $play)
+    /**
+     * @param int     $gameId
+     * @param int     $playerNumber
+     * @param PlayDto $playDto      play move
+     */
+    public function play($gameId, $playerNumber, PlayDto $playDto)
     {
         $game = $this->loadGame($gameId);
-        $player = $game->getPlayer($playerNumber);
+        $player = $game->getPlayerByPlayerNumber($playerNumber);
+        $play = $this->mapPlayDtoToPlay($playDto);
         $player->play($play);
         $this->gameRepository->persistGame($game);
     }
 
     /**
-     * @return GameDetailDto
+     * @param Game $game
      *
-     * @todo implement player stones
+     * @return GameDetailDto
      */
     private function mapGameToGameDetailDto(Game $game)
     {
@@ -88,6 +94,18 @@ class GameService
         }
 
         return $builder->get();
+    }
+
+    /**
+     * @param PlayDto $playDto
+     *
+     * @return Play
+     */
+    private function mapPlayDtoToPlay(PlayDto $playDto)
+    {
+        $stone = new Stone($playDto->getStone()->getTopValue(), $playDto->getStone()->getBottomValue());
+
+        return new Play($playDto->getTurnNumber(), $stone, $playDto->getSide());
     }
 
     /**

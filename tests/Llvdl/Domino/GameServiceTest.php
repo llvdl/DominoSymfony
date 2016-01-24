@@ -8,7 +8,12 @@ use Llvdl\Domino\GameRepository;
 use Llvdl\Domino\Dto\GameDetailDto;
 use Llvdl\Domino\Dto\PlayerDto;
 use Llvdl\Domino\Dto\StoneDto;
+use Llvdl\Domino\Dto\PlayDto;
 use Llvdl\Domino\State;
+use Llvdl\Domino\Player;
+use Llvdl\Domino\Table;
+use Llvdl\Domino\Play;
+use Llvdl\Domino\Stone;
 
 /**
  * GameService API:
@@ -16,19 +21,24 @@ use Llvdl\Domino\State;
  * - getRecentGames(): GameDetailDto[]
  * - deal($gameId: int): void
  * - move($move: MoveDto): void
+ * - play($gameId, $playerNumber, PlayDto): void
  */
 class GameServiceTest extends \PHPUnit_Framework_TestCase
 {
+    use Traits\PrivatePropertySetter;
+    use Traits\GameServiceExpectationTrait;
+
     const ONCE = 1;
 
     /** @var gameService */
     private $gameService;
+    
     /** @var GameRepository */
     private $gameRepositoryMock;
 
     public function setUp()
     {
-        $this->gameRepositoryMock = $this->getMockBuilder('Llvdl\Domino\GameRepository')
+        $this->gameRepositoryMock = $this->getMockBuilder(GameRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -180,6 +190,29 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
         $this->assertPlayerHasStone($gameDetailDto, $currentPlayerNumber, new StoneDto(6, 6));
     }
 
+    public function testPlay()
+    {
+        $game = $this->createGame(42, 'test game');
+        $players = [
+            1=>$this->createPlayerMock($game, 1, 'player 1'),
+            2=>$this->createPlayerMock($game, 2, 'player 2'),
+            3=>$this->createPlayerMock($game, 3, 'player 3'),
+            4=>$this->createPlayerMock($game, 4, 'player 4')
+        ];
+        $this->setPrivateProperty($game, 'players', $players);
+
+        $this->expectForFindById(42, $game);
+
+        $players[3]->expects($this->once())
+            ->method('play')
+            ->with($this->equalToPlay(new Play(1, new Stone(6,6), Table::SIDE_LEFT)));
+
+        $turnNumber = 1;
+        $playerNumber = 3;
+        $play = new PlayDto($turnNumber, new StoneDto(6,6), PlayDto::SIDE_LEFT);
+        $this->gameService->play(42, $playerNumber, $play);
+    }
+
     /** @expectedException \Llvdl\Domino\Exception\DominoException */
     public function testDealGameWithNonExistingGameThrowsException()
     {
@@ -187,44 +220,11 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
         $this->gameService->deal(42);
     }
 
-    private function createGame($id, $name)
+    private function createGame($id, $name, $players = [])
     {
         $game = new Game($name);
         $this->setPrivateProperty($game, 'id', $id);
         return $game;
-    }
-
-    private function setPrivateProperty($obj, $name, $value)
-    {
-        $property = new \reflectionproperty(get_class($obj), $name);
-        $property->setAccessible(true);
-        $property->setValue($obj, $value);
-    }
-
-    private function expectForFindById($gameId, $resultGame, $count = null)
-    {
-        $this->gameRepositoryMock
-            ->expects($count === null ? $this->any() : $this->exactly($count))
-            ->method('findById')
-            ->with($this->identicalTo($gameId))
-            ->willReturn($resultGame);
-    }
-
-    private function expectForGetRecentGames($resultGames, $count = null)
-    {
-        $this->gameRepositoryMock
-            ->expects($count === null ? $this->any() : $this->exactly($count))
-            ->method('getRecentGames')
-            ->willReturn($resultGames);
-    }
-
-    private function expectPersistForGame(Game $game, $count = null)
-    {
-        $expectation = $this->gameRepositoryMock
-            ->expects($count === null ? $this->any() : $this->exactly($count))
-            ->method('persistGame')
-            ->with($this->identicalTo($game))
-            ->willReturn($game);
     }
 
     private function assertStoneCount($count, PlayerDto $player)
@@ -257,5 +257,23 @@ class GameServiceTest extends \PHPUnit_Framework_TestCase
             false
         );
         $this->assertTrue($containsStone, 'expected to find stone in stone collection');
+    }
+
+    private function createPlayerMock(Game $game, $playerNumber, $name)
+    {
+        $mock = $this->getMockBuilder(Player::class)
+            ->setConstructorArgs([$game, $playerNumber, $name])
+            ->getMock();
+
+        $mock->expects($this->any())->method('getNumber')->willReturn($playerNumber);
+        $mock->expects($this->any())->method('getName')->willReturn($name);
+
+        return $mock;
+    }
+
+    /** @return PHPUnit_Framework_Constraint */
+    private function equalToPlay(Play $play)
+    {
+        return new Constraint\IsEqualPlayConstraint($play);
     }
 }

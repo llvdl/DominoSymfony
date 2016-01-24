@@ -63,6 +63,22 @@ class Game
     }
 
     /**
+     * @param int $playerNumber
+     *
+     * @return Player|null
+     */
+    public function getPlayerByPlayerNumber($playerNumber)
+    {
+        foreach ($this->players as $player) {
+            if ($player->getNumber() === $playerNumber) {
+                return $player;
+            }
+        }
+
+        return;
+    }
+
+    /**
      * @return Turn|null current turn or NULL if game has not started or has finished
      */
     public function getCurrentTurn()

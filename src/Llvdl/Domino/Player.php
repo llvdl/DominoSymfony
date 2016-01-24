@@ -108,4 +108,12 @@ class Player
 
         return false;
     }
+
+    /**
+     * Initiate a move by playing a stone.
+     */
+    public function play(Play $play)
+    {
+        throw new Exception('not implemented');
+    }
 }
