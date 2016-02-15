@@ -2,12 +2,8 @@
 
 namespace Tests\AppBundle\Controller;
 
-use Llvdl\Domino\Game;
-use Llvdl\Domino\Dto\StoneDto;
-use Llvdl\Domino\Dto\PlayDto;
-use Llvdl\Domino\Dto\GameDetailDto;
-use Llvdl\Domino\Dto\GameDetailDtoBuilder;
-use Llvdl\Domino\Exception\DominoException;
+use Llvdl\Domino\Service\Dto;
+use Llvdl\Domino\Domain\Exception\DominoException;
 use Tests\AppBundle\Controller\Http\StatusCode;
 
 use Symfony\Component\DomCrawler\Crawler;
@@ -23,7 +19,7 @@ class PlayerControllerTest extends MockeryWebTestCase
     {
         $shuffler = new StoneShuffler();
         $shuffler->setStoneAtPosition([6,6], 1);
-        $game = (new GameDetailDtoBuilder())
+        $game = (new Dto\GameDetailBuilder())
             ->id(1)
             ->stateStarted()
             ->addPlayer(1, $shuffler->getNext(7))
@@ -34,7 +30,7 @@ class PlayerControllerTest extends MockeryWebTestCase
             ->get();
 
         $this->expectForGameById(1, $game, null);
-        $this->expectForPlay($game->getId(), 1, new PlayDto(1, new StoneDto(6,6), PlayDto::SIDE_LEFT));
+        $this->expectForPlay($game->getId(), 1, new Dto\Play(1, new Dto\Stone(6,6), Dto\Play::SIDE_LEFT));
 
         $crawler = $this->openPlayerPage(1, 1);
         $this->clickPlayButton($crawler, 1, '6_6-left');

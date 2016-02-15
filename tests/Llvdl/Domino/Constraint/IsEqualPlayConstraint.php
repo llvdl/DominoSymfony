@@ -2,7 +2,7 @@
 
 namespace Tests\Llvdl\Domino\Constraint;
 
-use Llvdl\Domino\Play;
+use Llvdl\Domino\Domain\Play;
 
 class IsEqualPlayConstraint extends \PHPUnit_Framework_Constraint
 {

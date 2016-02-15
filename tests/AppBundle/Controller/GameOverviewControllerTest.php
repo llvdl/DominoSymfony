@@ -2,12 +2,8 @@
 
 namespace Tests\AppBundle\Controller;
 
-use Llvdl\Domino\Game;
-use Llvdl\Domino\Dto\StoneDto;
-use Llvdl\Domino\Dto\PlayDto;
-use Llvdl\Domino\Dto\GameDetailDto;
-use Llvdl\Domino\Dto\GameDetailDtoBuilder;
-use Llvdl\Domino\Exception\DominoException;
+use Llvdl\Domino\Service\Dto;
+use Llvdl\Domino\Domain\Exception\DominoException;
 use Tests\AppBundle\Controller\Http\StatusCode;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -64,7 +60,7 @@ class GameOverviewControllerTest extends MockeryWebTestCase
     {
         $gameName = 'My new game ' . uniqid();
         $gameBeforeCreated = null;
-        $gameAfterCreated = (new GameDetailDtoBuilder())->id(42)->stateReady()->name($gameName)->get();
+        $gameAfterCreated = (new Dto\GameDetailBuilder())->id(42)->stateReady()->name($gameName)->get();
         $gameCreated = false;
 
         $this->expectForGameById(42, function() use(&$gameCreated, $gameBeforeCreated, $gameAfterCreated) {
@@ -85,12 +81,12 @@ class GameOverviewControllerTest extends MockeryWebTestCase
     /**
      * @param int $id
      * @param string $name
-     * @return GameDetailDto
+     * @return Dto\GameDetail
      */
     private function createGame($id, $name)
     {
-        $gameDetailDto = new GameDetailDto($id, $name, null, [], []);
-        return $gameDetailDto;
+        $GameDetail = new Dto\GameDetail($id, $name, null, [], []);
+        return $GameDetail;
     }
 
     /** @return Crawler */

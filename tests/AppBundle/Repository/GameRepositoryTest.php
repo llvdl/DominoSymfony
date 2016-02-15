@@ -7,11 +7,11 @@ use Liip\FunctionalTestBundle\Test\WebTestCase;
 
 use AppBundle\Repository\GameRepository;
 
-use Llvdl\Domino\Game;
-use Llvdl\Domino\State;
-use Llvdl\Domino\Player;
-use Llvdl\Domino\Stone;
-use Llvdl\Domino\Turn;
+use Llvdl\Domino\Domain\Game;
+use Llvdl\Domino\Domain\State;
+use Llvdl\Domino\Domain\Player;
+use Llvdl\Domino\Domain\Stone;
+use Llvdl\Domino\Domain\Turn;
 
 class GameRepositoryTest extends WebTestCase
 {
@@ -37,7 +37,6 @@ class GameRepositoryTest extends WebTestCase
         $this->loadFixtures($fixtures);
         $this->gameRepository = new GameRepository($em);
     }
-
 
     public function testPersistNewGame()
     {

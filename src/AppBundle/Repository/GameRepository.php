@@ -2,10 +2,10 @@
 
 namespace AppBundle\Repository;
 
-use Llvdl\Domino\Game;
+use Llvdl\Domino\Domain\Game;
 use Doctrine\ORM\EntityManager;
 
-class GameRepository implements \Llvdl\Domino\GameRepository
+class GameRepository implements \Llvdl\Domino\Domain\GameRepository
 {
     /** @var EntityManager */
     private $entityManager;

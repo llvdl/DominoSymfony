@@ -2,7 +2,7 @@
 
 namespace Tests\Llvdl\Domino\Traits;
 
-use Llvdl\Domino\Game;
+use Llvdl\Domino\Domain\Game;
 
 trait GameServiceExpectationTrait
 {

@@ -12,9 +12,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use AppBundle\Form\GameDetailForm;
 use AppBundle\Form\Type\GameDetailFormType;
-use Llvdl\Domino\GameService;
-use Llvdl\Domino\Dto\GameDetailDto;
-use Llvdl\Domino\Exception\DominoException;
+use Llvdl\Domino\Service\GameService;
+use Llvdl\Domino\Domain\Exception\DominoException;
 
 class GameDetailController extends \AppBundle\Controller\BaseController
 {
@@ -39,7 +38,7 @@ class GameDetailController extends \AppBundle\Controller\BaseController
         try {
             $game = $this->getGameById($gameId);
             $formObject = new GameDetailForm($gameId);
-            $formObject->setCanDeal($game->getState() == GameDetailDto::STATE_READY);
+            $formObject->setCanDeal($game->canDeal());
             $form = $this->createForm(GameDetailFormType::class, $formObject);
 
             return $this->handleGameDetailForm($request, $form, $formObject)
@@ -55,14 +54,23 @@ class GameDetailController extends \AppBundle\Controller\BaseController
     private function handleGameDetailForm(Request $request, FormInterface $form, GameDetailForm $formObject)
     {
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            if ($form->get('dealGame')->isClicked()) {
-                $this->gameService->deal($formObject->getGameId());
 
-                return $this->redirectToRoute(self::ROUTE_GAME_DETAIL, ['gameId' => $formObject->getGameId()]);
-            }
-
+        if (
+            $form->isSubmitted()
+            && $form->isValid()
+            && !$form->get('dealGame')->isClicked()
+        ) {
             throw new BadRequestHttpException('invalid or missing submit action');
+        }
+
+        if (
+            $form->isSubmitted()
+            && $form->isValid()
+            && $form->get('dealGame')->isClicked()
+        ) {
+            $this->gameService->deal($formObject->getGameId());
+
+            return $this->redirectToRoute(self::ROUTE_GAME_DETAIL, ['gameId' => $formObject->getGameId()]);
         }
 
         return;
@@ -81,7 +89,6 @@ class GameDetailController extends \AppBundle\Controller\BaseController
         return $this->render('game/game-view.html.twig', [
             'form' => $form->createView(),
             'game' => $gameDetail,
-            'canDeal' => $gameDetail->getState() === GameDetailDto::STATE_READY,
         ]);
     }
 

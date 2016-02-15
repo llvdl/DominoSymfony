@@ -2,20 +2,21 @@
 
 namespace Tests\AppBundle\Controller\Traits;
 
-use Llvdl\Domino\GameService;
-use Llvdl\Domino\Dto\GameDetailDto;
+use Llvdl\Domino\Service\GameService;
+use Llvdl\Domino\Service\Dto;
 use Symfony\Component\DomCrawler\Crawler;
-use Llvdl\Domino\Dto\PlayDto;
 
 trait GameServiceExpectationTrait
 {
     /** @return GameService */
     private function getGameServiceMock()
     {
-        return $this->getClient()->getContainer()->mock('app.game_service', 'Llvdl\Domino\GameService');
+        $container = $this->getClient()->getContainer(); 
+
+        return $container->mock('app.game_service', GameService::class);
     }
 
-    /** @param GameDetailDto[] $result */
+    /** @param Dto\GameDetail[] $result */
     private function expectForRecentGames(array $result, $count = 1)
     {
         $expectation = $this->getGameServiceMock()
@@ -29,7 +30,7 @@ trait GameServiceExpectationTrait
 
     /**
      * @param integer $id
-     * @param GameDetailDto|callback|NULL $result
+     * @param Dto\GameDetail|callback|NULL $result
      * @param bool $isOnce TRUE if call is expected exactly once
      */
     private function expectForGameById($id, $result, $count = 1)
@@ -93,12 +94,18 @@ trait GameServiceExpectationTrait
             ->andThrow($e);
     }
 
-    private function expectForPlay($gameId, $playerId, PlayDto $play, callable $callback = null)
+    /**
+     * @param int $gameId
+     * @param int $playerId
+     * @param Dto\Play $play
+     * @param callable|null $callback
+     */
+    private function expectForPlay($gameId, $playerId, Dto\Play $play, callable $callback = null)
     {
         $this->getGameServiceMock()
             ->shouldReceive('play')
             ->with($gameId, $playerId, \Mockery::on(function($p) use($play) {
-                return $p instanceof PlayDto
+                return $p instanceof Dto\Play
                     && $p->isEqual($play);
             }))
             ->once()

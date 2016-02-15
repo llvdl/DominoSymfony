@@ -2,12 +2,8 @@
 
 namespace Tests\AppBundle\Controller;
 
-use Llvdl\Domino\Game;
-use Llvdl\Domino\Dto\StoneDto;
-use Llvdl\Domino\Dto\PlayDto;
-use Llvdl\Domino\Dto\GameDetailDto;
-use Llvdl\Domino\Dto\GameDetailDtoBuilder;
-use Llvdl\Domino\Exception\DominoException;
+use Llvdl\Domino\Service\Dto;
+use Llvdl\Domino\Domain\Exception\DominoException;
 use Tests\AppBundle\Controller\Http\StatusCode;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -28,7 +24,7 @@ class GameDetailControllerTest extends MockeryWebTestCase
 
     public function testGameDetailShowsDetails()
     {
-        $game = (new GameDetailDtoBuilder())
+        $game = (new Dto\GameDetailBuilder())
             ->id(1)
             ->stateReady()
             ->name('My Game')
@@ -50,7 +46,7 @@ class GameDetailControllerTest extends MockeryWebTestCase
 
     public function testGameDetailPageHasLinkToPlayerPages()
     {
-        $game = (new GameDetailDtoBuilder())
+        $game = (new Dto\GameDetailBuilder())
             ->id(312)
             ->stateReady()
             ->name('My Game')
@@ -70,8 +66,8 @@ class GameDetailControllerTest extends MockeryWebTestCase
 
     public function testGameCanBeDealt()
     {
-        $gameBeforeDeal = (new GameDetailDtoBuilder())->id(1)->stateReady()->get();
-        $gameAfterDeal = (new GameDetailDtoBuilder())->id(1)->stateStarted()->get();
+        $gameBeforeDeal = (new Dto\GameDetailBuilder())->id(1)->stateReady()->get();
+        $gameAfterDeal = (new Dto\GameDetailBuilder())->id(1)->stateStarted()->get();
         $gameDealt = false;
         $this->expectForGameById(1,function() use (&$gameDealt, $gameBeforeDeal, $gameAfterDeal) {
             return $gameDealt ? $gameAfterDeal : $gameBeforeDeal;
@@ -89,7 +85,7 @@ class GameDetailControllerTest extends MockeryWebTestCase
 
     public function testGameDetailDealButtonIsNotShownIfAlreadyStarted()
     {
-        $game = (new GameDetailDtoBuilder())->id(1)->stateStarted()->get();
+        $game = (new Dto\GameDetailBuilder())->id(1)->stateStarted()->get();
         $this->expectForGameById(1, $game, null);
 
         $crawler = $this->openGameDetailPage(1);
@@ -101,7 +97,7 @@ class GameDetailControllerTest extends MockeryWebTestCase
     public function testCannotDealGameTwice()
     {
         // a stale form may be submitted to deal the game even if it has already been dealt
-        $this->expectForGameById(1, (new GameDetailDtoBuilder())->id(1)->stateReady()->get(), null);
+        $this->expectForGameById(1, (new Dto\GameDetailBuilder())->id(1)->stateReady()->get(), null);
 
         $crawler = $this->openGameDetailPage(1);
 
@@ -115,7 +111,7 @@ class GameDetailControllerTest extends MockeryWebTestCase
 
     public function testGameDealButtonMustBeSubmitted()
     {
-        $this->expectForGameById(1, (new GameDetailDtoBuilder())->id(1)->stateReady()->get(), null);
+        $this->expectForGameById(1, (new Dto\GameDetailBuilder())->id(1)->stateReady()->get(), null);
 
         $crawler = $this->openGameDetailPage(1);
 
@@ -132,9 +128,9 @@ class GameDetailControllerTest extends MockeryWebTestCase
 
     public function testAfterGameDealAllPlayersHaveSevenStones()
     {
-        $gameBeforeDeal = (new GameDetailDtoBuilder())->id(1)->stateReady()->get();
+        $gameBeforeDeal = (new Dto\GameDetailBuilder())->id(1)->stateReady()->get();
         $shuffler = new StoneShuffler();
-        $gameAfterDeal = (new GameDetailDtoBuilder())
+        $gameAfterDeal = (new Dto\GameDetailBuilder())
             ->id(1)
             ->stateStarted()
             ->addPlayer(1, $shuffler->getNext(7))
@@ -160,7 +156,7 @@ class GameDetailControllerTest extends MockeryWebTestCase
 
     public function testAfterGameDealTurnNumberIsOneAndAPlayerHasTurn()
     {
-        $gameDto = (new GameDetailDtoBuilder())
+        $gameDto = (new Dto\GameDetailBuilder())
                 ->id(1)
                 ->stateStarted()
                 ->turn(1, 3)

@@ -11,12 +11,12 @@ use AppBundle\Form\Type\PlayerFormType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
-use Llvdl\Domino\GameService;
+use Llvdl\Domino\Service\GameService;
 use AppBundle\Form\Move;
-use Llvdl\Domino\Dto\GameDetailDto;
-use Llvdl\Domino\Dto\PlayerDto;
-use Llvdl\Domino\Dto\PlayDto;
-use Llvdl\Domino\Dto\StoneDto;
+use Llvdl\Domino\Service\Dto\GameDetail;
+use Llvdl\Domino\Service\Dto\Player;
+use Llvdl\Domino\Service\Dto\Play;
+use Llvdl\Domino\Service\Dto\Stone;
 
 class PlayerController extends \AppBundle\Controller\BaseController
 {
@@ -56,7 +56,7 @@ class PlayerController extends \AppBundle\Controller\BaseController
      *
      * @return Response|null
      */
-    private function handlePlayerForm(Request $request, FormInterface $form, GameDetailDto $game, PlayerDto $player)
+    private function handlePlayerForm(Request $request, FormInterface $form, GameDetail $game, Player $player)
     {
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
@@ -64,10 +64,10 @@ class PlayerController extends \AppBundle\Controller\BaseController
                 $turnNumber = $form->getData()->getTurnNumber();
                 $move = $form->getData()->getMove();
                 if ($move && $move->isPlay()) {
-                    $play = new PlayDto(
+                    $play = new Play(
                         $turnNumber,
-                        new StoneDto($move->getStoneTopValue(), $move->getStoneBottomValue()),
-                        $move->getSide() === 'left' ? PlayDto::SIDE_LEFT : PlayDto::SIDE_RIGHT
+                        new Stone($move->getStoneTopValue(), $move->getStoneBottomValue()),
+                        $move->getSide() === 'left' ? Play::SIDE_LEFT : Play::SIDE_RIGHT
                     );
                     $this->gameService->play($game->getId(), $player->getNumber(), $play);
 
@@ -89,7 +89,7 @@ class PlayerController extends \AppBundle\Controller\BaseController
      *
      * @return Response
      */
-    private function getViewResponse(FormInterface $form, GameDetailDto $game, PlayerDto $player)
+    private function getViewResponse(FormInterface $form, GameDetail $game, Player $player)
     {
         return $this->render('player/player-view.html.twig', [
             'form' => $form->createView(),
@@ -99,11 +99,11 @@ class PlayerController extends \AppBundle\Controller\BaseController
     }
 
     /**
-     * @param PlayerDto $player
+     * @param Player $player
      *
      * @return Move[]
      */
-    private function getMoves(PlayerDto $player)
+    private function getMoves(Player $player)
     {
         $moves = [Move::pass()];
         foreach ($player->getStones() as $stone) {

@@ -10,7 +10,7 @@ use AppBundle\Form\Type\CreateGameFormType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Form\FormInterface;
-use Llvdl\Domino\GameService;
+use Llvdl\Domino\Service\GameService;
 
 class GameOverviewController extends \AppBundle\Controller\BaseController
 {
