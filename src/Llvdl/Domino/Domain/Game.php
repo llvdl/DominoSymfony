@@ -77,7 +77,7 @@ class Game
             }
         }
 
-        return;
+        return null;
     }
 
     /**
@@ -107,44 +107,6 @@ class Game
 
         $this->setFirstTurn();
         $this->state->start();
-    }
-
-    /**
-     * Set state.
-     *
-     * @param State $state
-     *
-     * @return Game
-     */
-    public function setState(State $state = null)
-    {
-        $this->state = $state;
-
-        return $this;
-    }
-
-    /**
-     * Add player.
-     *
-     * @param \Llvdl\Domino\Player $player
-     *
-     * @return Game
-     */
-    public function addPlayer(Player $player)
-    {
-        $this->players[] = $player;
-
-        return $this;
-    }
-
-    /**
-     * Remove player.
-     *
-     * @param \Llvdl\Domino\Player $player
-     */
-    public function removePlayer(Player $player)
-    {
-        $this->players->removeElement($player);
     }
 
     /**

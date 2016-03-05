@@ -14,8 +14,37 @@ class PlayerControllerTest extends MockeryWebTestCase
     use Traits\StatusCodeAsserterTrait;
 
     const PLAY_BUTTON_NAME = 'player_form[play]';
+    
+    /**
+     * @test
+     */
+    public function unknownPlayerYieldsNotFoundPage()
+    {
+        // not found page when opening non existing game
+        $this->openPlayerPage(14141, 1, StatusCode::NOT_FOUND);
+        
+        $shuffler = new StoneShuffler();
+        $shuffler->setStoneAtPosition([6,6], 1);
+        $game = (new Dto\GameDetailBuilder())
+            ->id(1)
+            ->stateStarted()
+            ->addPlayer(1, $shuffler->getNext(7))
+            ->addPlayer(2, $shuffler->getNext(7))
+            ->addPlayer(3, $shuffler->getNext(7))
+            ->addPlayer(4, $shuffler->getNext(7))
+            ->turn(1, 1)
+            ->get();
 
-    public function testDoubleSixCanBePlayedAsFirstMove()
+        $this->expectForGameById(1, $game, null);
+        
+        // not found page when opening non existing player
+        $crawler = $this->openPlayerPage(1, 5, StatusCode::NOT_FOUND);
+    }
+
+    /**
+     * @test
+     */
+    public function doubleSixCanBePlayedAsFirstMove()
     {
         $shuffler = new StoneShuffler();
         $shuffler->setStoneAtPosition([6,6], 1);
@@ -39,24 +68,25 @@ class PlayerControllerTest extends MockeryWebTestCase
     /**
      * @param int $gameId
      * @param int $playerNumber
+     * @param in $expectedStatusCode
      * @return Crawler
      */
-    private function openPlayerPage($gameId, $playerNumber)
+    private function openPlayerPage($gameId, $playerNumber, $expectedStatusCode = StatusCode::OK)
     {
         $url = strtr(
             '/game/{gameId}/player/{playerNumber}', 
             ['{gameId}'=>$gameId, '{playerNumber}'=>$playerNumber]
         );
         $crawler = $this->getClient()->request('GET', $url);
-        $this->assertStatusCode(StatusCode::OK);
-        $this->assertEquals(200, $this->getClient()->getResponse()->getStatusCode());
+        $this->assertStatusCode($expectedStatusCode);
 
         return $crawler;
     }
-
+    
     /**
      * @param Crawler $crawler
      * @param string $moveValue
+     * @return Crawler
      */
     private function clickPlayButton(Crawler &$crawler, $turnNumber, $moveValue)
     {
@@ -71,5 +101,7 @@ class PlayerControllerTest extends MockeryWebTestCase
         $this->assertStatusCode(StatusCode::MOVED_TEMPORARILY);
         $this->getClient()->followRedirect();
         $this->assertStatusCode(StatusCode::OK);
+        
+        return $crawler;
     }
 }

@@ -11,30 +11,23 @@ class Player
 
     /** @var Game $game */
     private $game;
+
     /** @var int number */
     private $number;
-    /** @var string $name */
-    private $name;
+
     /** @var Stone[] */
     private $stones = [];
 
-    public function __construct(Game $game, $number, $name = '')
+    public function __construct(Game $game, $number)
     {
         $this->game = $game;
         $this->number = $number;
-        $this->name = $name;
     }
 
     /** @return int */
     public function getNumber()
     {
         return $this->number;
-    }
-
-    /** @return string */
-    public function getName()
-    {
-        return $this->name;
     }
 
     /** @return Stone[] */
@@ -54,44 +47,6 @@ class Player
             $stone->setPlayer($this);
         }
         $this->stones = array_merge(is_array($this->stones) ? $this->stones : [], $stones);
-    }
-
-    /**
-     * Get id.
-     *
-     * @return int
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Set number.
-     *
-     * @param int $number
-     *
-     * @return Player
-     */
-    public function setNumber($number)
-    {
-        $this->number = $number;
-
-        return $this;
-    }
-
-    /**
-     * Set name.
-     *
-     * @param string $name
-     *
-     * @return Player
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-
-        return $this;
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace Llvdl\Domino\Domain;
 
-use Llvdl\Domino\Exception\Domain\DominoException;
+use Llvdl\Domino\Domain\Exception\InvalidArgumentException;
 
 class Play extends Move
 {
@@ -21,14 +21,10 @@ class Play extends Move
     {
         parent::__construct($turnNumber);
 
-        if ($stone === null) {
-            throw new DominoException('stone may not be null');
-        }
         if (!in_array($side, [Table::SIDE_LEFT, Table::SIDE_RIGHT])) {
-            throw new DominoException('Invalid side');
+            throw new InvalidArgumentException('Invalid side');
         }
 
-        $this->turnNumber = $turnNumber;
         $this->stone = $stone;
         $this->side = $side;
     }

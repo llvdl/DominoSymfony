@@ -6,20 +6,17 @@ class Player
 {
     /** @var int */
     private $number;
-    /** @var string */
-    private $name;
+
     /** @var Stone[] */
     private $stones;
 
     /**
      * @param int
-     * @param string  $name
      * @param Stone[] $stones
      */
-    public function __construct($number, $name, array $stones)
+    public function __construct($number, array $stones)
     {
         $this->number = $number;
-        $this->name = $name;
         $this->stones = $stones;
     }
 
@@ -27,12 +24,6 @@ class Player
     public function getNumber()
     {
         return $this->number;
-    }
-
-    /** @return string */
-    public function getName()
-    {
-        return $this->name;
     }
 
     /** @return Stone[] */

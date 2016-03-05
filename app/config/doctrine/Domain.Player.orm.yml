@@ -8,9 +8,7 @@ Llvdl\Domino\Domain\Player:
     fields:
         number:
             type: integer
-        name:
-            type: string
-            length: 255
+
     manyToOne:
         game:
             targetEntity: Llvdl\Domino\Domain\Game

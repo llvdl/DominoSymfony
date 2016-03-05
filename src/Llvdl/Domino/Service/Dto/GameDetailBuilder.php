@@ -78,11 +78,10 @@ class GameDetailBuilder
      * 
      * @return GameDetailBuilder
      */
-    public function addPlayer($number, /*array*/ $stones, $name = '')
+    public function addPlayer($number, /*array*/ $stones)
     {
         $playerNumber = $number;
-        $playerName = ($name === '' ? 'player '.$playerNumber : $name);
-        $this->_players[] = new Player($playerNumber, $playerName, $this->mapToStoneDto($stones));
+        $this->_players[] = new Player($playerNumber, $this->mapToStoneDto($stones));
 
         return $this;
     }

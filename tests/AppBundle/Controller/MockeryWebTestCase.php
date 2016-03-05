@@ -3,9 +3,11 @@
 namespace Tests\AppBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Bundle\FrameworkBundle\Client;
 
 class MockeryWebTestCase extends WebTestCase
 {
+    /** @var Client */
     private $client;
 
     public static function setUpBeforeClass()
@@ -33,6 +35,7 @@ class MockeryWebTestCase extends WebTestCase
         parent::tearDown();
     }
 
+    /** @return Client */
     protected function getClient()
     {
         return $this->client;
