@@ -1,0 +1,16 @@
+AppBundle\Form\PlayerForm:
+    properties:
+        gameId:
+            - NotBlank: ~
+            - Type: integer
+        playerNumber:
+            - NotBlank: ~
+            - Type: integer
+        turnNumber:
+            - NotBlank: ~
+            - Type: integer
+
+AppBundle\Form\CreateGameForm:
+    properties:
+        name:
+            - NotBlank: ~
