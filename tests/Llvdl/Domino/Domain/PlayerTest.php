@@ -50,6 +50,43 @@ class PlayerTest extends \PHPUnit_Framework_TestCase
         
         $player->play($play);
     }
+    
+    /** 
+     * @test 
+     * */
+    public function playingInvalidStoneDoesNotRemoveStoneFromPlayer()
+    {
+        $game = $this->getMockGame();
+        $player = new Player($game, 1, 'player 1');
+        $player->addStones([new Stone(1,1), new Stone(4,1)]);
+        $play = new Play(4, new Stone(4,1), Table::SIDE_LEFT);
+
+        $this->assertPlayerHasStone($player, new Stone(4,1));
+        $this->expectedThatInvalidMoveIsThrown($game);
+        $this->expectThatAddMoveIsCalled($game, $player, $play, self::ONCE);
+        
+        $invalidMoveExceptionThrown = false;
+        try {
+            $player->play(new Play(4, new Stone(4,1), Table::SIDE_LEFT));
+        } catch(InvalidMoveException $e) {
+            $this->assertPlayerHasStone($player, new Stone(4,1));
+            $invalidMoveExceptionThrown = true;
+        }
+        
+        $this->assertTrue($invalidMoveExceptionThrown, 'expected InvalidMoveException to be thrown');
+    }
+
+    /**
+     * @test
+     */
+    public function hasStringRepresentation()
+    {
+        $game = $this->getMockGame();
+        $player = new Player($game, 3, 'player three');
+
+        $representation = (string) $player;
+        $this->assertTrue(strstr($representation, '3') !== false, 'contains player number');
+   }
 
     private function getMockGame()
     {
@@ -75,6 +112,14 @@ class PlayerTest extends \PHPUnit_Framework_TestCase
                 $this->identicalTo($player),
                 $this->equalToPlay($play)
             );
+    }
+    
+    private function expectedThatInvalidMoveIsThrown($gameMock)
+    {
+        $gameMock
+            ->expects($this->any())
+            ->method('addMove')
+            ->will($this->throwException(new InvalidMoveException('move is invalid (mock)')));
     }
     
     private function assertPlayerHasStone(Player $player, Stone $stone)

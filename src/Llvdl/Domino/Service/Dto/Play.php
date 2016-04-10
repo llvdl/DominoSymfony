@@ -2,7 +2,7 @@
 
 namespace Llvdl\Domino\Service\Dto;
 
-use Llvdl\Domino\Domain\Exception\DominoException;
+use Llvdl\Domino\Domain\Exception\InvalidArgumentException;
 
 class Play
 {
@@ -21,12 +21,12 @@ class Play
     /**
      * @param int    $turnNumber
      * @param Stone  $stone
-     * @param string $side       one of SIDE_LEFT or SIDE_RIGHT 
+     * @param string $side       either SIDE_LEFT or SIDE_RIGHT 
      */
     public function __construct($turnNumber, Stone $stone, $side)
     {
         if (!in_array($side, [self::SIDE_LEFT, self::SIDE_RIGHT], true)) {
-            throw new DominoException('invalid side value');
+            throw new InvalidArgumentException('invalid side value');
         }
 
         $this->turnNumber = $turnNumber;

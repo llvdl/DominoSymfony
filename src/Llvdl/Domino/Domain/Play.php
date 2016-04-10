@@ -51,6 +51,6 @@ class Play extends Move
     /** @return string */
     public function __toString()
     {
-        return 'Play(turn: '.$this->getTurnNumber().', stone: '.$this->getStone()->__toString().')';
+        return 'Play(turn: '.$this->getTurnNumber().', stone: '.$this->getStone()->__toString().', side: '.$this->getSide().')';
     }
 }

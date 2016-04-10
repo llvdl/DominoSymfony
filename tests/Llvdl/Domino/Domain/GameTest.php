@@ -22,34 +22,68 @@ class GameTest extends \PHPUnit_Framework_TestCase
         $this->game = new Game($this->gameName);
     }
 
-    public function testGameHasAName()
+    /** @test */
+    public function gameHasAName()
     {
         $this->assertEquals($this->gameName, $this->game->getName());
     }
 
-    public function testNewlyCreatedGameHasFourPlayersWithNoStonesInHand()
+    /** @test */
+    public function newlyCreatedGameHasFourPlayersWithNoStonesInHand()
     {
         $this->assertPlayerCount(4, $this->game);
         foreach($this->game->getPlayers() as $player) {
             $this->assertPlayerStoneCount(0, $player);
         }
     }
-
-    public function testDealGameStartsGame()
+    
+    /** @test */
+    public function playersHaveNumbers1Through4() 
+    {
+        foreach(range(1, 4) as $number) {
+            $player = $this->game->getPlayerByPlayerNumber($number);
+            $this->assertInstanceOf(Player::class, $player);
+        }
+    }
+    
+    /**
+     * @test
+     * @dataProvider provideInvalidPlayerNumbers
+     * @expectedException \Llvdl\Domino\Domain\Exception\DominoException 
+     * */
+    public function getPlayerByInvalidNumberThrowsException($playerNumber)
+    {
+        $this->game->getPlayerByPlayerNumber($playerNumber);
+    }
+    
+    public function provideInvalidPlayerNumbers() 
+    {
+        return [
+            ['too low, first player has number 1' => 0],
+            ['too high' => 5]
+        ];
+    }
+    
+    /** @test */
+    public function dealGameStartsGame()
     {
         $this->assertTrue($this->game->getState()->canStart());
         $this->game->deal();
         $this->assertFalse($this->game->getState()->canStart());
     }
 
-     /** @expectedException \Llvdl\Domino\Domain\Exception\DominoException */
-    public function testGameCannotBeDealtTwice()
+    /** 
+     * @test
+     * @expectedException \Llvdl\Domino\Domain\Exception\DominoException 
+     */
+    public function gameCannotBeDealtTwice()
     {
         $this->game->deal();
         $this->game->deal();
     }
 
-    public function testAfterDealStonesAreEvenlyDistributedAmongPlayers()
+    /** @test */
+    public function afterDealStonesAreEvenlyDistributedAmongPlayers()
     {
         $this->game->deal();
 
@@ -70,7 +104,8 @@ class GameTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testAddMovePlayFirstStone()
+    /** @test */
+    public function addMovePlayFirstStone()
     {
         $this->game->deal();
 
@@ -83,6 +118,58 @@ class GameTest extends \PHPUnit_Framework_TestCase
         $this->game->addMove($player, $play);
 
         $this->assertEquals(2, $this->game->getCurrentTurn()->getNumber(), 'current turn number is 2');
+    }
+
+    /** 
+     * @test
+     * @expectedException \Llvdl\Domino\Domain\Exception\InvalidMoveException 
+     */
+    public function cannotAddMoveToUnstartedGame()
+    {
+        $this->assertFalse($this->game->getState()->isStarted());
+
+        $player = $this->game->getPlayerByPlayerNumber(1);
+        
+        $play = new Play(1, new Stone(6,6), Table::SIDE_LEFT);
+        $this->game->addMove($player, $play);
+    }
+    
+    /** 
+     * @test
+     * @expectedException \Llvdl\Domino\Domain\Exception\InvalidMoveException 
+     */
+    public function moveOnlyAllowedForCurrentTurn()
+    {
+        $this->game->deal();
+
+        $currentPlayerNumber = $this->game->getCurrentTurn()->getPlayerNumber();
+        $player = $this->game->getPlayerByPlayerNumber($currentPlayerNumber);
+
+        $this->assertEquals(1, $this->game->getCurrentTurn()->getNumber(), 'current turn number is 1');
+
+        $play = new Play(2, new Stone(6,6), Table::SIDE_LEFT);
+        $this->game->addMove($player, $play);
+    }
+    
+    /** 
+     * @test
+     * @expectedException \Llvdl\Domino\Domain\Exception\InvalidMoveException 
+     */
+    public function moveOnlyAllowedForCurrentPlayer()
+    {
+        $this->game->deal();
+
+        $currentPlayerNumber = $this->game->getCurrentTurn()->getPlayerNumber();
+        $player = $this->game->getPlayerByPlayerNumber($currentPlayerNumber);
+
+        $play = new Play(1, new Stone(6,6), Table::SIDE_LEFT);
+        
+        $nextPlayerNumber = $currentPlayerNumber === 4 ? 1 : $currentPlayerNumber + 1;
+        $nextPlayer = $this->game->getPlayerByPlayerNumber($nextPlayerNumber);
+        
+        $nextPlayer->addStones([new Stone(6,6)]);
+        
+        $this->game->addMove($nextPlayer, $play);
     }
 
     private function assertPlayerCount($playerCount, Game $game)

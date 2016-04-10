@@ -3,6 +3,7 @@
 namespace Llvdl\Domino\Domain;
 
 use Llvdl\Domino\Domain\Exception\InvalidMoveException;
+use Llvdl\Domino\Domain\Exception\InvalidArgumentException;
 
 class Game
 {
@@ -65,7 +66,7 @@ class Game
     }
 
     /**
-     * @param int $playerNumber
+     * @param int $playerNumber player number (1 through 4)
      *
      * @return Player|null
      */
@@ -77,7 +78,7 @@ class Game
             }
         }
 
-        return null;
+        throw new InvalidArgumentException('invalid player number');
     }
 
     /**

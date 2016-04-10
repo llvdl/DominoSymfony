@@ -32,6 +32,7 @@ class GameDetailControllerTest extends MockeryWebTestCase
             ->addPlayer(2, [])
             ->addPlayer(3, [])
             ->addPlayer(4, [])
+            ->tableStones([])
             ->get();
         $this->expectForGameById(1, $game, null);
 

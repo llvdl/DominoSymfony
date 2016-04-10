@@ -89,6 +89,8 @@ class GameDetailBuilder
     public function tableStones(array $stones)
     {
         $this->_tableStones = $this->mapToStoneDto($stones);
+
+        return $this;
     }
 
     /**
